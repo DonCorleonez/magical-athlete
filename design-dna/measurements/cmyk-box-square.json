@@ -1,0 +1,58 @@
+{
+  "source": {
+    "file": "cmyk-box-square.jpg",
+    "width": 1024,
+    "height": 1024
+  },
+  "measurement": {
+    "k": 8,
+    "sampling": {
+      "method": "deterministic_stratified",
+      "max_pixels": 160000,
+      "sampled_pixels": 160000
+    }
+  },
+  "palette": [
+    {
+      "hex": "#fed42c",
+      "coverage": 0.568,
+      "role": "background"
+    },
+    {
+      "hex": "#f01c03",
+      "coverage": 0.1756,
+      "role": "accent"
+    },
+    {
+      "hex": "#fcfbed",
+      "coverage": 0.0636,
+      "role": "unassigned"
+    },
+    {
+      "hex": "#e56c7c",
+      "coverage": 0.0463,
+      "role": "unassigned"
+    },
+    {
+      "hex": "#714b22",
+      "coverage": 0.0455,
+      "role": "unassigned"
+    },
+    {
+      "hex": "#370e06",
+      "coverage": 0.0416,
+      "role": "text"
+    },
+    {
+      "hex": "#768db5",
+      "coverage": 0.0331,
+      "role": "unassigned"
+    },
+    {
+      "hex": "#eb8212",
+      "coverage": 0.0263,
+      "role": "unassigned"
+    }
+  ],
+  "measured": true
+}
