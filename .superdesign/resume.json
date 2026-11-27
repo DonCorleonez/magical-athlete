@@ -5,16 +5,18 @@
       "targetKind": "existing-ui",
       "projectId": "9c0e9f77-16d2-485a-82cf-b351ab45eece",
       "activeDraftId": "8d92f418-c2f8-4eef-8f0d-b6332d77602e",
+      "dnaV1DraftId": "34da361f-3dfe-47e2-bbc4-50213e249d2b",
       "designSystemPath": ".superdesign/design-system.md",
       "contextFiles": [
         ".superdesign/design-system.md",
+        "design-dna/magical-athlete.dna.json",
         "dist/index.html",
         "dist/table.js"
       ],
       "fingerprints": {
-        ".superdesign/design-system.md": "7954D341E48315A6BF1F332EE80A571950F708811DEF97C2A79FF315F09E532C",
-        "dist/index.html": "08D5992FDD577490A4C77FA3F0275DD5DF807C2BC8A0CF1B5A65FDD9E4EFC01D",
-        "dist/table.js": "1CBBA783DAD03FF957ADF9E4461DEFF7ADE32DD32A8DD16A4919720B9633AF8B"
+        ".superdesign/design-system.md": "94C4DB57CDFA70D7675E160744F59CF12A56CCB85A0B1ECA35D8903CD4E756BA",
+        "dist/index.html": "F0FD76FEAD90B4872340A9C9A85555117218BC44FACA02188509725F510D8E6B",
+        "dist/table.js": "B05F6536FC0D9D024A10392AC3D4767898FEC35772172F3122AD3000D752E9EE"
       },
       "drafts": {
         "8d92f418-c2f8-4eef-8f0d-b6332d77602e": {
@@ -26,9 +28,14 @@
           "title": "Opsi B — Posisi Ringkas di Header",
           "visualDirection": "rulebook-print-option-b-390px",
           "currentVersion": 1
+        },
+        "34da361f-3dfe-47e2-bbc4-50213e249d2b": {
+          "title": "DNA v1 — Opsi A (CMYK 2025)",
+          "visualDirection": "design-dna-v1-cmyk-2025-option-a",
+          "currentVersion": 1
         }
       },
-      "updatedAt": "2026-11-27T21:35:30+07:00"
+      "updatedAt": "2026-11-28T01:06:30+07:00"
     }
   }
 }
