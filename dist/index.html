@@ -1,62 +1,1111 @@
 <!doctype html>
-<html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Race Companion</title>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Race Companion — Magical Athlete</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#101323;color:#f7f6ff;font:16px system-ui,sans-serif}main{max-width:790px;margin:auto;padding:24px 18px 48px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #363950;padding-bottom:16px}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.mark{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#cfff65;color:#101323;font-size:28px}.muted,small{color:#c0c2d6}.steps{display:flex;flex-wrap:wrap;gap:7px;margin:24px 0}.step{border:1px solid #41445a;padding:5px 9px;border-radius:20px;font-size:14px;color:#c0c2d6}.current{background:#d9cbff;color:#151329;border-color:#d9cbff;font-weight:750}h1{font-size:clamp(34px,8vw,60px);letter-spacing:-.055em;line-height:1;margin:12px 0}h2{font-size:20px;margin:0 0 10px}p{line-height:1.5}.panel,details{background:#1d2034;border:1px solid #383c56;border-radius:18px;padding:16px;margin:12px 0}.hero{background:linear-gradient(120deg,#292442,#1d2034);padding:22px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}.grid,.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}.dice{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.dice button{padding:10px 2px;font-size:20px}.dice button[aria-pressed=true]{background:#cfff65;color:#101323}button,input,select,textarea{font:inherit;border-radius:10px}button{min-height:44px;padding:9px 13px;border:1px solid #50546e;color:inherit;background:#282d47;cursor:pointer;font-weight:700}button.primary{background:#cfff65;color:#14172a;border-color:#cfff65}button:disabled{opacity:.45;cursor:default}input,select,textarea{width:100%;background:#111526;color:inherit;border:1px solid #565a72;padding:10px;min-height:44px}label{display:block;margin:9px 0}label span{display:block;margin-bottom:5px}.effect{padding:10px 12px;margin:8px 0;border-left:3px solid #cfff65;background:#131728;border-radius:6px;white-space:pre-wrap}.actions{margin-top:14px}.tag{color:#d9cbff;font-weight:750}summary{cursor:pointer;font-weight:700}ol{padding-left:24px}li{margin:6px 0}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d9cbff;outline-offset:2px}form{margin:0}.error{color:#ffb5b5}
-.race-head p{margin:4px 0 12px}.action-panel{border-color:#768c57}.action-panel .tag{margin-top:0}.board-table{overflow:auto}.board-table table{width:100%;border-collapse:collapse;text-align:left}.board-table th,.board-table td{padding:11px 8px;border-bottom:1px solid #41445a}.board-table small{display:block}.active-row{background:#303a3d}.board-table progress{display:block;width:min(100%,105px);height:6px;margin-top:5px;accent-color:#cfff65}.actions button{touch-action:manipulation}button,input,select{touch-action:manipulation}
+:root{
+  --ink:#202023;
+  --ink-muted:#4A4952;
+  --paper:#FFF5DE;
+  --surface:#FFFDF7;
+  --paper-alt:#F3E5C3;
+  --yellow:#FFD24A;
+  --yellow-soft:#FFF0B8;
+  --coral:#F46D57;
+  --coral-soft:#FFE2DC;
+  --teal:#38A89B;
+  --teal-deep:#18635A;
+  --teal-soft:#D7F2EE;
+  --error:#A61C1C;
+  --font-display:'Archivo Black','Impact','Arial Black',sans-serif;
+  --font-ui:'Atkinson Hyperlegible Next','Segoe UI',system-ui,sans-serif;
+  --radius-card:14px;
+  --radius-btn:10px;
+  --shadow:3px 3px 0 #202023;
+  --shadow-lg:4px 4px 0 #202023;
+}
+*{box-sizing:border-box}
+html{overflow-x:clip}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:16px/1.5 var(--font-ui);
+  font-variant-numeric:tabular-nums;
+  -webkit-text-size-adjust:100%;
+  overflow-x:clip;
+}
+main{
+  max-width:1100px;
+  margin:0 auto;
+  padding:14px 14px calc(44px + env(safe-area-inset-bottom,0px));
+}
+@media(min-width:640px){
+  main{padding:20px 22px calc(56px + env(safe-area-inset-bottom,0px))}
+}
+
+/* Header & Navigation */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:12px;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+}
+.mark{
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  width:46px;
+  height:46px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--yellow);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.brand-title{
+  font-family:var(--font-display);
+  font-size:18px;
+  line-height:1.1;
+  letter-spacing:-.02em;
+}
+.brand-sub{
+  display:block;
+  font-size:14px;
+  font-weight:700;
+  color:var(--ink-muted);
+}
+
+.steps{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:14px 0 18px;
+}
+.step{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  border:2px solid var(--ink);
+  background:var(--surface);
+  color:var(--ink-muted);
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.2;
+}
+.step-num{
+  display:inline-grid;
+  place-items:center;
+  width:20px;
+  height:20px;
+  border-radius:50%;
+  background:var(--paper-alt);
+  color:var(--ink);
+  font-size:12px;
+  font-weight:800;
+}
+.step.done{
+  background:var(--teal-soft);
+  color:var(--ink);
+}
+.step.done .step-num{
+  background:var(--teal);
+}
+.step.current{
+  background:var(--yellow);
+  color:var(--ink);
+  font-weight:800;
+  box-shadow:2px 2px 0 var(--ink);
+}
+.step.current .step-num{
+  background:var(--ink);
+  color:var(--yellow);
+}
+
+/* Typography */
+h1,h2,h3{
+  font-family:var(--font-display);
+  letter-spacing:-.02em;
+  line-height:1.12;
+  margin:0;
+}
+h1{font-size:clamp(26px,5.5vw,40px);margin:4px 0 6px}
+h2{font-size:20px;margin-bottom:8px}
+h3{font-size:17px;margin-bottom:6px}
+p{margin:0 0 10px;line-height:1.5}
+p:last-child{margin-bottom:0}
+small,.muted{color:var(--ink-muted);font-size:14px}
+.sr-only{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
+}
+
+/* Rulebook Panels & Decorative Print Texture */
+.panel,details{
+  background:var(--surface);
+  border:2px solid var(--ink);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow);
+  padding:16px;
+  margin:0 0 14px;
+}
+.hero{
+  background:var(--paper-alt);
+  padding:18px;
+}
+.hero-print{
+  background:
+    radial-gradient(circle, rgba(32,32,35,.10) 1.25px, transparent 1.35px) 0 0 / 12px 12px,
+    linear-gradient(135deg, var(--yellow) 0%, #FFE699 58%, var(--teal-soft) 100%);
+  padding:20px;
+}
+.hero-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--ink);
+  color:var(--yellow);
+  font-size:14px;
+  font-weight:800;
+  padding:4px 10px;
+  border-radius:6px;
+  margin-bottom:8px;
+}
+.hero-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+/* Badges & Tags */
+.tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  background:var(--ink);
+  color:var(--paper);
+  font-size:14px;
+  font-weight:800;
+  padding:4px 10px;
+  border-radius:7px;
+  margin:0 0 8px;
+}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  min-height:28px;
+  padding:3px 10px;
+  border:2px solid var(--ink);
+  border-radius:999px;
+  background:var(--surface);
+  color:var(--ink);
+  font-size:14px;
+  font-weight:700;
+  line-height:1.2;
+}
+.pill-yellow{background:var(--yellow)}
+.pill-teal{background:var(--teal-soft)}
+.pill-teal-solid{background:var(--teal)}
+.pill-coral{background:var(--coral-soft)}
+.pill-coral-solid{background:var(--coral)}
+.pill-ink{background:var(--ink);color:var(--paper)}
+.pill-muted{background:var(--paper-alt);color:var(--ink-muted)}
+
+/* Layout Helpers */
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{justify-content:space-between}
+.stack{display:flex;flex-direction:column;gap:10px}
+.grid,.names{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));
+  gap:12px;
+}
+.grid-2{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));
+  gap:12px;
+}
+
+/* Controls & Touch Targets (>= 44x44px, 16px input text) */
+button,input,select,textarea{
+  font:16px/1.3 var(--font-ui);
+  border-radius:var(--radius-btn);
+  color:var(--ink);
+  touch-action:manipulation;
+}
+button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:46px;
+  min-width:44px;
+  padding:10px 16px;
+  border:2px solid var(--ink);
+  background:var(--surface);
+  cursor:pointer;
+  font-weight:800;
+  box-shadow:2px 2px 0 var(--ink);
+  text-align:center;
+  transition:transform .12s ease-out,background-color .12s ease-out,box-shadow .12s ease-out;
+}
+button:hover:not(:disabled){
+  background:var(--paper-alt);
+}
+button:active:not(:disabled){
+  transform:translate(2px,2px);
+  box-shadow:0 0 0 var(--ink);
+}
+button.primary{
+  background:var(--yellow);
+  color:var(--ink);
+}
+button.primary:hover:not(:disabled){
+  background:#FFC61A;
+}
+button.btn-teal{
+  background:var(--teal);
+  color:var(--ink);
+}
+button.btn-coral{
+  background:var(--coral);
+  color:var(--ink);
+}
+button.btn-block{
+  width:100%;
+}
+button:disabled{
+  opacity:.42;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+input,select,textarea{
+  width:100%;
+  background:var(--surface);
+  color:var(--ink);
+  border:2px solid var(--ink);
+  padding:10px 12px;
+  min-height:46px;
+  font-size:16px;
+}
+textarea{min-height:76px;resize:vertical}
+label{display:block;margin:0 0 10px}
+label:last-child{margin-bottom:0}
+label>span{
+  display:block;
+  margin-bottom:5px;
+  font-size:14px;
+  font-weight:800;
+  color:var(--ink);
+}
+summary{
+  cursor:pointer;
+  font-weight:800;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  list-style:none;
+}
+summary::-webkit-details-marker{display:none}
+summary::after{
+  content:"+";
+  display:inline-grid;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border:2px solid var(--ink);
+  border-radius:7px;
+  background:var(--paper-alt);
+  font-family:var(--font-display);
+  font-size:16px;
+  flex:0 0 auto;
+}
+details[open]>summary::after{
+  content:"−";
+  background:var(--yellow);
+}
+details[open]>summary{
+  margin-bottom:10px;
+  padding-bottom:8px;
+  border-bottom:1.5px solid var(--paper-alt);
+}
+
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{
+  outline:3px solid var(--ink);
+  outline-offset:2px;
+  box-shadow:0 0 0 6px var(--yellow);
+}
+[tabindex="-1"]:focus{outline:none;box-shadow:none}
+#undo{white-space:nowrap;flex-shrink:0;width:auto}
+form{margin:0}
+.error{
+  color:var(--error);
+  font-weight:800;
+  min-height:22px;
+  margin:8px 0;
+}
+.error:empty{display:none}
+
+/* Seat cards (Setup) */
+.seat-card{
+  background:var(--paper);
+  border:2px solid var(--ink);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.seat-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:14px;
+  font-weight:800;
+  margin-bottom:6px;
+}
+.seat-num{
+  display:inline-grid;
+  place-items:center;
+  width:24px;
+  height:24px;
+  border-radius:6px;
+  background:var(--ink);
+  color:var(--yellow);
+  font-size:14px;
+}
+
+/* Snake Draft */
+.draft-turn-bar{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));
+  gap:10px;
+  margin-bottom:12px;
+}
+.draft-stat{
+  background:var(--surface);
+  border:2px solid var(--ink);
+  border-radius:12px;
+  padding:10px 12px;
+}
+.draft-stat strong{
+  display:block;
+  font-family:var(--font-display);
+  font-size:18px;
+  margin-top:2px;
+}
+.draft-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0 12px;
+}
+.chip-btn{
+  min-height:44px;
+  padding:8px 12px;
+  font-size:15px;
+  font-weight:700;
+  border-radius:999px;
+  background:var(--paper);
+  box-shadow:none;
+}
+.chip-btn[aria-pressed="true"]{
+  background:var(--yellow);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.effect{
+  padding:10px 12px;
+  margin:8px 0 0;
+  border:2px solid var(--ink);
+  border-left:6px solid var(--teal);
+  background:var(--paper);
+  border-radius:10px;
+  white-space:pre-wrap;
+  font-size:15px;
+}
+.effect-label{
+  display:inline-block;
+  font-size:14px;
+  font-weight:800;
+  background:var(--teal-soft);
+  border:1.5px solid var(--ink);
+  border-radius:6px;
+  padding:1px 7px;
+  margin-bottom:4px;
+}
+.power-preview{
+  margin-top:12px;
+  padding:12px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--paper-alt);
+}
+.power-preview:empty{display:none}
+.team-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:8px;
+}
+
+/* Roster & Pick Cards */
+.player-card{
+  background:var(--surface);
+  border:2px solid var(--ink);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow);
+  padding:14px;
+}
+.racer-card{
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--paper);
+  padding:12px;
+  margin-top:10px;
+}
+.racer-card.used{
+  background:var(--paper-alt);
+  opacity:.82;
+}
+.pick-group{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:8px;
+}
+.pick-choice{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  text-align:left;
+  width:100%;
+  min-height:52px;
+  padding:10px 12px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--surface);
+  box-shadow:2px 2px 0 var(--ink);
+  gap:4px;
+}
+.pick-choice[aria-pressed="true"]{
+  background:var(--yellow);
+  box-shadow:3px 3px 0 var(--ink);
+}
+.pick-choice-sub{
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink-muted);
+  white-space:normal;
+  line-height:1.35;
+}
+.save-toast{
+  display:inline-block;
+  margin-left:8px;
+  font-size:14px;
+  font-weight:800;
+  color:var(--teal-deep);
+}
+
+/* Pre-race */
+.track-card{
+  border:2px solid var(--ink);
+  border-radius:12px;
+  padding:12px 14px;
+  margin:10px 0;
+}
+.track-card.mild{background:var(--teal-soft)}
+.track-card.wild{background:var(--coral-soft)}
+.lineup-item{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--paper);
+  padding:10px 12px;
+}
+
+/* Race Screen — Option A Responsive Two-Column Layout */
+.race-layout{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:14px;
+  align-items:start;
+}
+@media(min-width:860px){
+  .race-layout{
+    grid-template-columns:minmax(0,1.02fr) minmax(0,1.15fr);
+    gap:18px;
+  }
+}
+.race-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.race-head{
+  border:3px solid var(--ink);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow-lg);
+  padding:16px;
+}
+.race-head.mild{background:var(--teal)}
+.race-head.wild{background:var(--coral)}
+.race-head-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:8px;
+}
+.race-head h1{
+  margin:2px 0 6px;
+  word-break:break-word;
+}
+.race-head-meta{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  font-weight:800;
+  font-size:16px;
+}
+
+/* Active Task Panel */
+.action-panel{
+  background:var(--surface);
+  border:3px solid var(--ink);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow-lg);
+  padding:16px;
+}
+.action-panel h2{
+  font-size:21px;
+  margin-bottom:8px;
+}
+.task-context{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:8px 0 12px;
+}
+.choice-stack{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+.dice{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+@media(min-width:460px){
+  .dice{grid-template-columns:repeat(6,1fr)}
+}
+.die-btn{
+  flex-direction:column;
+  min-height:64px;
+  padding:8px 4px;
+  gap:4px;
+  font-family:var(--font-display);
+  font-size:20px;
+  background:var(--surface);
+}
+.die-btn:hover:not(:disabled){
+  background:var(--yellow-soft);
+}
+.die-pips{display:block;width:24px;height:24px}
+
+.guess-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+@media(min-width:460px){
+  .guess-grid{grid-template-columns:repeat(6,1fr)}
+}
+.guess-btn{
+  min-height:48px;
+  background:var(--paper);
+  font-family:var(--font-display);
+  font-size:18px;
+}
+
+/* Duel Separate Dice Controls */
+.duel-pair{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+  margin:10px 0 14px;
+}
+.duel-box{
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--paper);
+  padding:12px;
+}
+.duel-radios{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+  margin-top:8px;
+}
+.duel-radio{
+  position:relative;
+  margin:0;
+}
+.duel-radio input{
+  position:absolute;
+  opacity:0;
+  width:1px;
+  height:1px;
+  min-height:0;
+  pointer-events:none;
+}
+.duel-radio span{
+  display:grid;
+  place-items:center;
+  min-height:46px;
+  min-width:44px;
+  margin:0;
+  border:2px solid var(--ink);
+  border-radius:10px;
+  background:var(--surface);
+  font-family:var(--font-display);
+  font-size:18px;
+  cursor:pointer;
+}
+.duel-radio input:checked + span{
+  background:var(--yellow);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.duel-radio input:focus-visible + span{
+  outline:3px solid var(--ink);
+  outline-offset:2px;
+  box-shadow:0 0 0 6px var(--yellow);
+}
+
+/* Confirm Move Math Chips */
+.math-strip{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  margin:10px 0 14px;
+}
+
+/* Track Checkpoint Grid */
+.track-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:6px;
+  margin-top:10px;
+}
+@media(min-width:430px){
+  .track-grid{grid-template-columns:repeat(6,1fr)}
+}
+@media(min-width:680px){
+  .track-grid{grid-template-columns:repeat(8,1fr)}
+}
+.space-cell{
+  border:2px solid var(--ink);
+  border-radius:10px;
+  background:var(--paper);
+  padding:5px 4px;
+  min-height:54px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:space-between;
+  gap:3px;
+  text-align:center;
+}
+.space-cell.is-start{background:var(--teal-soft)}
+.space-cell.is-finish{
+  background:repeating-linear-gradient(45deg,var(--yellow) 0 6px,#fff 6px 12px);
+}
+.space-cell.is-star{background:var(--yellow-soft)}
+.space-cell.is-trip{background:var(--coral-soft)}
+.space-cell.is-arrow{background:var(--teal-soft)}
+.space-cell.is-active{
+  box-shadow:inset 0 0 0 2px var(--ink);
+  background:var(--yellow);
+}
+.space-cell.is-target{
+  border:3px dashed var(--ink);
+  background:var(--coral-soft);
+}
+.space-head{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.1;
+}
+.space-fx{
+  font-size:12px;
+  font-weight:800;
+  background:var(--surface);
+  border:1px solid var(--ink);
+  border-radius:5px;
+  padding:0 4px;
+}
+.space-tokens{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:3px;
+}
+.pawn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:24px;
+  height:22px;
+  padding:0 5px;
+  border-radius:6px;
+  border:1.5px solid var(--ink);
+  background:var(--surface);
+  color:var(--ink);
+  font-size:12px;
+  font-weight:800;
+}
+.pawn.is-active{
+  background:var(--ink);
+  color:var(--yellow);
+}
+.pawn.is-tripped{
+  background:var(--coral);
+  color:var(--ink);
+}
+.pawn.is-target{
+  background:var(--yellow);
+  color:var(--ink);
+}
+.pawn-stack-count{
+  font-size:11px;
+  font-weight:800;
+  background:var(--ink);
+  color:var(--paper);
+  border-radius:5px;
+  padding:1px 4px;
+}
+
+/* Racer Position Rows */
+.racer-rows{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:12px;
+}
+.racer-row{
+  border:2px solid var(--ink);
+  border-radius:12px;
+  background:var(--surface);
+  padding:10px 12px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+}
+.racer-row.active-row{
+  background:var(--yellow-soft);
+  border-width:3px;
+  box-shadow:2px 2px 0 var(--ink);
+}
+.racer-row.target-row{
+  border-style:dashed;
+  border-width:3px;
+  background:var(--coral-soft);
+}
+.racer-row.out-row{
+  background:var(--paper-alt);
+  opacity:.78;
+}
+.racer-row-name{
+  font-family:var(--font-display);
+  font-size:17px;
+  line-height:1.15;
+  word-break:break-word;
+}
+.racer-row-meta{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:6px;
+  margin-top:4px;
+}
+.racer-row-score{
+  text-align:right;
+  min-width:68px;
+}
+.racer-pos-num{
+  display:block;
+  font-family:var(--font-display);
+  font-size:17px;
+}
+.racer-pts{
+  display:inline-block;
+  font-size:14px;
+  font-weight:800;
+  color:var(--ink-muted);
+}
+.track-meter{
+  grid-column:1 / -1;
+  height:8px;
+  border:1.5px solid var(--ink);
+  border-radius:999px;
+  background:var(--paper);
+  overflow:hidden;
+}
+.track-meter-fill{
+  height:100%;
+  background:var(--teal);
+  transition:width .16s ease-out;
+}
+.active-row .track-meter-fill{background:var(--ink)}
+
+/* Recent Events */
+.recent-list{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.recent-list li{
+  border-left:4px solid var(--coral);
+  background:var(--paper);
+  padding:8px 10px;
+  border-radius:0 8px 8px 0;
+  font-weight:600;
+}
+
+/* Tables & Results */
+.board-table{width:100%}
+.board-table table{
+  width:100%;
+  border-collapse:collapse;
+  text-align:left;
+}
+.board-table th,.board-table td{
+  padding:10px 8px;
+  border-bottom:2px solid var(--paper-alt);
+}
+.board-table th{
+  font-size:14px;
+  font-weight:800;
+  color:var(--ink-muted);
+}
+.podium-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));
+  gap:12px;
+  margin:12px 0 16px;
+}
+.podium-card{
+  border:3px solid var(--ink);
+  border-radius:var(--radius-card);
+  box-shadow:var(--shadow-lg);
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.podium-1{background:var(--yellow)}
+.podium-2{background:var(--teal-soft)}
+.podium-empty{
+  background:var(--paper-alt);
+  border-style:dashed;
+  box-shadow:none;
+}
+.podium-rank{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-family:var(--font-display);
+  font-size:16px;
+}
+.podium-racer{
+  font-family:var(--font-display);
+  font-size:24px;
+  line-height:1.1;
+}
+
+.catalog-links{
+  margin-top:12px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.catalog-links a{
+  color:var(--teal-deep);
+  font-weight:800;
+  text-underline-offset:3px;
+}
+ol.full-log{
+  margin:0;
+  padding-left:22px;
+}
+ol.full-log li{
+  margin:6px 0;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
 </style>
-<main><header><div class="brand"><span class="mark" aria-hidden="true">⚄</span><div>Race Companion<br><small>Untuk Magical Athlete</small></div></div><button id="undo">Undo</button></header><nav class="steps" aria-label="Tahap permainan"></nav><section id="screen"></section><details id="catalog"><summary>Daftar atlet dan kekuatan</summary><p class="muted">Magical Athlete · CMYK 2025</p><label><span>Cari nama atlet</span><input type="search" id="catalog-search" placeholder="Contoh: Alchemist"></label><div id="catalog-results"></div><p><a style="color:#d9cbff" href="https://www.rulespal.com/magical-athlete/rulebook#racer-info" target="_blank" rel="noopener">Rulebook</a> · <a style="color:#d9cbff" href="https://iello.fr/athletes-de-compete-tatillon-repond-a-vos-questions/" target="_blank" rel="noopener">FAQ dan klarifikasi aturan</a></p></details></main>
+</head>
+<body>
+<main>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <circle cx="7" cy="7" r="2.6" fill="#202023"/>
+          <circle cx="19" cy="7" r="2.6" fill="#202023"/>
+          <circle cx="13" cy="13" r="2.6" fill="#202023"/>
+          <circle cx="7" cy="19" r="2.6" fill="#202023"/>
+          <circle cx="19" cy="19" r="2.6" fill="#202023"/>
+        </svg>
+      </span>
+      <div>
+        <span class="brand-title">Race Companion</span>
+        <span class="brand-sub">Magical Athlete · Pendamping Meja</span>
+      </div>
+    </div>
+    <button type="button" id="undo">Undo</button>
+  </header>
+
+  <nav class="steps" aria-label="Tahap permainan"></nav>
+  <div id="live-announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <section id="screen"></section>
+
+  <details id="catalog">
+    <summary>Daftar atlet dan kekuatan (36 kartu dasar)</summary>
+    <p class="muted">Magical Athlete · Edisi CMYK 2025</p>
+    <label><span>Cari nama atlet</span><input type="search" id="catalog-search" placeholder="Contoh: Alchemist" autocomplete="off"></label>
+    <div id="catalog-results"></div>
+    <div class="catalog-links">
+      <a href="https://www.rulespal.com/magical-athlete/rulebook#racer-info" target="_blank" rel="noopener">Rulebook</a>
+      <a href="https://iello.fr/athletes-de-compete-tatillon-repond-a-vos-questions/" target="_blank" rel="noopener">FAQ dan klarifikasi aturan</a>
+    </div>
+  </details>
+</main>
+
 <script src="powers.js"></script>
 <script src="referee.js"></script>
 <script src="table.js"></script>
 <script>
-const key='race-companion-v1', screen=document.querySelector('#screen'), nav=document.querySelector('nav');
+const key='race-companion-v1', screen=document.querySelector('#screen'), nav=document.querySelector('nav'), announcer=document.querySelector('#live-announcer');
 const stages=['Pemain','Snake draft','Roster','Pilih atlet','Pre-race','Race','Hasil'];
 const initial=()=>({stage:0, players:[], slots:4, turn:0, round:1, active:0, log:[], placed:[], die:0});
 let saved;
 try{saved=JSON.parse(localStorage.getItem(key))}catch{}
 let state=saved?.state||initial(), history=saved?.history||[];
+let lastAnnounced='', lastTaskKey='', shouldShiftFocus=false, savedToastKey='';
+
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const persist=()=>{try{localStorage.setItem(key,JSON.stringify({state,history}))}catch{}};
-function change(fn, scroll=false){history.push(structuredClone(state));if(history.length>40)history.shift();fn();persist();render();if(scroll)window.scrollTo(0,0)}
+function change(fn, scroll=false){
+  history.push(structuredClone(state));
+  if(history.length>40)history.shift();
+  fn();
+  persist();
+  shouldShiftFocus=true;
+  render();
+  if(scroll)window.scrollTo(0,0);
+}
 const button=(label,action,extra='',primary=false)=>'<button type="button" data-action="'+action+'" '+extra+(primary?' class="primary"':'')+'>'+label+'</button>';
-const heading=(title,sub)=>'<div class="panel hero"><h1>'+title+'</h1><p class="muted">'+sub+'</p></div>';
+const heading=(title,sub,kicker='')=>'<div class="panel hero-print">'+(kicker?'<span class="hero-kicker">'+esc(kicker)+'</span>':'')+'<h1 id="stage-focus" tabindex="-1">'+title+'</h1><p class="muted">'+sub+'</p></div>';
 const field=(label,content)=>'<label><span>'+label+'</span>'+content+'</label>';
 const numopts=(lo,hi,v)=>Array.from({length:hi-lo+1},(_,i)=>'<option '+(i+lo===v?'selected':'')+'>'+(i+lo)+'</option>').join('');
-const draftPlayer=()=>{const n=state.players.length, pass=Math.floor(state.turn/n), i=state.turn%n;return (Math.floor(pass/2)+(pass%2?n-i-1:i))%n};
+const draftPlayer=(turn=state.turn)=>{const n=state.players.length, pass=Math.floor(turn/n), i=turn%n;return (Math.floor(pass/2)+(pass%2?n-i-1:i))%n};
 const athlete=p=>p.team[p.pick];
 const rules=[['pre','Sebelum race'],['before','Awal giliran sendiri'],['own','Dadu sendiri'],['other','Dadu lawan'],['move','Saat bergerak / kondisi papan'],['finish','Saat finis / akhir race']];
 const racerNames=Object.keys(racerPowers).sort((a,b)=>a.localeCompare(b));
-const normalize=name=>name.trim().toLowerCase();
+const normalize=name=>String(name||'').trim().toLowerCase();
 const presetName=name=>racerNames.find(racer=>normalize(racer)===normalize(name));
+
 function catalog(){
   const query=normalize(document.querySelector('#catalog-search').value);
   document.querySelector('#catalog-results').innerHTML=racerNames.filter(name=>normalize(name).includes(query))
     .map(name=>'<details><summary>'+esc(name)+'</summary>'+powerSummary(racerPowers[name])+'</details>').join('')
-    ||'<p>Tidak ada nama yang cocok.</p>';
+    ||'<p class="muted">Tidak ada nama yang cocok.</p>';
 }
 function powerSummary(power){
-  return rules.filter(([k])=>power?.[k]).map(([k,label])=>'<div class="effect"><strong>'+label+'</strong><br>'+esc(power[k])+'</div>').join('');
+  return rules.filter(([k])=>power?.[k]).map(([k,label])=>'<div class="effect"><span class="effect-label">'+label+'</span><br>'+esc(power[k])+'</div>').join('');
 }
 function availableRacers(){
   const drafted=new Set(state.players.flatMap(p=>p.team.map(a=>normalize(a.name))));
   return racerNames.filter(name=>!drafted.has(normalize(name)));
 }
+function draftChipsMarkup(query=''){
+  const avail=availableRacers();
+  const q=normalize(query);
+  const filtered=q?avail.filter(n=>normalize(n).includes(q)):avail;
+  const shown=filtered.slice(0,8);
+  const currentPreset=document.querySelector('#draft-preset')?.value||'';
+  return shown.map(name=>'<button type="button" class="chip-btn" data-pick-preset="'+esc(name)+'" aria-pressed="'+(currentPreset===name)+'">'+esc(name)+'</button>').join('')
+    +'<button type="button" class="chip-btn" data-pick-preset="custom" aria-pressed="'+(currentPreset==='custom')+'">+ Atlet custom</button>'
+    +(q&&!filtered.length?'<span class="muted">Tidak ada kecocokan untuk “'+esc(query)+'”.</span>':'');
+}
 function draftFields(){
-  return field('Pilih atlet','<select id="draft-preset" name="preset" required><option value="">Pilih dari daftar</option>'+
-    availableRacers().map(name=>'<option>'+esc(name)+'</option>').join('')+
-    '<option value="custom">Tambah atlet sendiri</option></select>')+
+  return field('Cari cepat nama atlet','<input type="search" id="draft-search" placeholder="Ketik nama atlet, mis. Suckerfish" autocomplete="off" autocorrect="off" spellcheck="false">')+
+    '<div class="draft-chips" id="draft-chips">'+draftChipsMarkup()+'</div>'+
+    field('Pilih atlet','<select id="draft-preset" name="preset" required><option value="">Pilih dari daftar ('+availableRacers().length+' tersisa)</option>'+
+      availableRacers().map(name=>'<option>'+esc(name)+'</option>').join('')+
+      '<option value="custom">Tambah atlet sendiri</option></select>')+
     '<div id="draft-custom" hidden>'+field('Nama atlet','<input name="athlete" maxlength="80" placeholder="Nama pada kartu">')+ruleEditor()+'</div>'+
-    '<div id="draft-power" aria-live="polite"></div>';
+    '<div id="draft-power" class="power-preview" aria-live="polite"></div>';
 }
 function showDraftPower(select){
   const custom=select.value==='custom';
   const form=select.form;
   document.querySelector('#draft-custom').hidden=!custom;
   form.elements.athlete.required=custom;
-  document.querySelector('#draft-power').innerHTML=powerSummary(racerPowers[select.value]);
+  const box=document.querySelector('#draft-power');
+  if(custom){
+    box.innerHTML='<strong>Atlet custom</strong><p class="muted">Isi nama dan catatan kekuatan kartu di kolom di atas sebelum menyimpan pick.</p>';
+  }else if(racerPowers[select.value]){
+    box.innerHTML='<strong>'+esc(select.value)+'</strong>'+powerSummary(racerPowers[select.value]);
+  }else{
+    box.innerHTML='';
+  }
+  const chips=document.querySelector('#draft-chips');
+  if(chips){
+    const q=document.querySelector('#draft-search')?.value||'';
+    chips.innerHTML=draftChipsMarkup(q);
+  }
 }
 function restorePresets(snapshot){
-  snapshot.players.forEach(player=>player.team.forEach(a=>{
+  snapshot?.players?.forEach(player=>player.team?.forEach(a=>{
     if(a.powerSet || rules.some(([k])=>a[k]))return;
     const preset=presetName(a.name);
     if(preset)Object.assign(a,racerPowers[preset],{powerSet:true});
@@ -66,71 +1115,235 @@ restorePresets(state);
 history.forEach(restorePresets);
 document.querySelector('#catalog-search').addEventListener('input',catalog);
 catalog();
-function ruleEditor(){return '<details><summary>Masukkan kemampuan dari kartu</summary><p class="muted">Pisahkan efek dengan baris baru. Untuk efek dadu tertentu, awali dengan angka dan titik dua, misalnya “1,6: Cek posisi sebelum bergerak”. Tanpa angka, efek ditampilkan untuk semua hasil dadu.</p>'+rules.map(([key,label])=>field(label,'<textarea rows="2" name="'+key+'"></textarea>')).join('')+'</details>'}
-function roster(readonly=false){return '<div class="grid">'+state.players.map((p,i)=>'<section class="panel"><h2>'+esc(p.name)+'</h2>'+p.team.map((a,j)=>'<details><summary>'+esc(a.name)+(p.used.includes(j)?' · Sudah race':'')+'</summary>'+(readonly?rules.map(([k,l])=>a[k]?'<div class="effect"><strong>'+l+'</strong><br>'+esc(a[k])+'</div>':'').join('')||'<p>Belum ada kemampuan yang dicatat.</p>':rules.map(([k,label])=>field(label,'<textarea rows="2" data-player="'+i+'" data-athlete="'+j+'" data-rule="'+k+'">'+esc(a[k])+'</textarea>')).join('')+button('Simpan kemampuan','save-rules','data-player="'+i+'" data-athlete="'+j+'"'))+'</details>').join('')+'</section>').join('')+'</div>'}
+
+function ruleEditor(){
+  return '<details><summary>Masukkan kemampuan dari kartu</summary><p class="muted">Pisahkan efek dengan baris baru. Untuk efek dadu tertentu, awali dengan angka dan titik dua, misalnya “1,6: Cek posisi sebelum bergerak”. Tanpa angka, efek ditampilkan untuk semua hasil dadu.</p>'+rules.map(([key,label])=>field(label,'<textarea rows="2" name="'+key+'"></textarea>')).join('')+'</details>';
+}
+function roster(readonly=false){
+  return '<div class="grid">'+state.players.map((p,i)=>{
+    const availCount=p.team.filter((_,j)=>!p.used.includes(j)).length;
+    return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal">'+availCount+' / '+p.team.length+' tersedia</span></div>'+
+      p.team.map((a,j)=>{
+        const isUsed=p.used.includes(j);
+        const effHtml=rules.map(([k,l])=>a[k]?'<div class="effect"><span class="effect-label">'+l+'</span><br>'+esc(a[k])+'</div>':'').join('');
+        return '<div class="racer-card'+(isUsed?' used':'')+'">'+
+          '<div class="row spread"><strong>'+esc(a.name)+'</strong><span class="pill '+(isUsed?'pill-muted':'pill-yellow')+'">'+(isUsed?'Sudah turun':'Tersedia')+'</span></div>'+
+          (effHtml||'<p class="muted" style="margin-top:6px">Belum ada kemampuan yang dicatat.</p>')+
+          (readonly?'':'<details style="margin:10px 0 0;padding:10px 12px;box-shadow:none"'+(savedToastKey===i+'-'+j?' open':'')+'><summary>Edit catatan kartu</summary>'+
+            rules.map(([k,label])=>field(label,'<textarea rows="2" data-player="'+i+'" data-athlete="'+j+'" data-rule="'+k+'">'+esc(a[k])+'</textarea>')).join('')+
+            '<div class="row">'+button('Simpan kemampuan','save-rules','data-player="'+i+'" data-athlete="'+j+'"')+(savedToastKey===i+'-'+j?'<span class="save-toast" role="status">Catatan tersimpan</span>':'')+'</div>'+
+          '</details>')+
+        '</div>';
+      }).join('')+
+    '</section>';
+  }).join('')+'</div>';
+}
+
+function pickCardMarkup(p,i){
+  const avail=p.team.map((a,j)=>({a,j})).filter(({j})=>!p.used.includes(j));
+  const used=p.team.map((a,j)=>({a,j})).filter(({j})=>p.used.includes(j));
+  const selectHtml='<select class="sr-only" name="pick'+i+'" id="pick-select-'+i+'" required tabindex="-1" aria-hidden="true"><option value="">Pilih atlet</option>'+
+    avail.map(({a,j})=>'<option value="'+j+'">'+esc(a.name)+'</option>').join('')+'</select>';
+  const cardsHtml='<div class="pick-group" role="group" aria-label="Pilih atlet untuk '+esc(p.name)+'">'+
+    avail.map(({a,j})=>{
+      const summaryText=rules.filter(([k])=>a[k]).map(([k,l])=>l+': '+a[k]).join(' · ')||'Tanpa teks kemampuan';
+      return '<button type="button" class="pick-choice" data-pick-player="'+i+'" data-pick-val="'+j+'" aria-pressed="false">'+
+        '<strong>'+esc(a.name)+'</strong>'+
+        '<span class="pick-choice-sub">'+esc(summaryText)+'</span>'+
+      '</button>';
+    }).join('')+
+  '</div>';
+  const usedHtml=used.length?'<div class="team-chips">'+used.map(({a})=>'<span class="pill pill-muted">'+esc(a.name)+' · Sudah turun</span>').join('')+'</div>':'';
+  return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal">'+avail.length+' tersedia</span></div>'+selectHtml+cardsHtml+usedHtml+'</section>';
+}
+
+function announceTurn(){
+  let msg='Tahap '+stages[state.stage];
+  let taskKey=String(state.stage);
+  if(state.stage===1&&state.players.length){
+    const p=state.players[draftPlayer()];
+    msg='Snake draft: giliran '+p.name+', pick '+(state.turn+1)+' dari '+state.players.length*state.slots;
+    taskKey='1-'+state.turn;
+  }else if(state.stage===5&&state.gm){
+    const activeName=referee.name(state,state.active);
+    const t=state.gm.q[0];
+    const desc=t?.type==='roll'?'Masukkan hasil dadu fisik':t?.title||(t?.type==='confirmMove'?'Konfirmasi langkah utama':t?.type||'');
+    msg='Giliran '+activeName+' ('+state.players[state.active].name+'). '+desc;
+    taskKey='5-'+state.active+'-'+state.gm.turn+'-'+state.gm.q.length+'-'+(t?.type||'')+'-'+(t?.title||'');
+  }
+  if(msg!==lastAnnounced){
+    announcer.textContent=msg;
+    lastAnnounced=msg;
+  }
+  if(shouldShiftFocus&&taskKey!==lastTaskKey){
+    shouldShiftFocus=false;
+    const target=document.querySelector('#task-focus')||document.querySelector('#stage-focus');
+    if(target)target.focus({preventScroll:true});
+  }
+  lastTaskKey=taskKey;
+  shouldShiftFocus=false;
+}
+
 function render(){
-document.querySelector('#undo').disabled=!history.length;
-nav.innerHTML=stages.map((s,i)=>'<span class="step '+(i===state.stage?'current':'')+'" '+(i===state.stage?'aria-current="step"':'')+'>'+s+'</span>').join('');
-const players=state.players;
-if(state.stage===0){
-screen.innerHTML=heading('Siap balapan?','Catat roster, hasil dadu, dan efek kartu selama main di meja.')+'<form id="setup" class="panel"><div class="grid">'+field('Jumlah pemain','<select id="count" name="count">'+numopts(2,6,4)+'</select>')+field('Atlet per pemain','<select name="slots" id="slots">'+numopts(1,6,4)+'</select>')+'</div><p class="muted">Isi nama searah jarum jam, mulai dari pemain yang draft pertama. Mode ini memakai satu atlet per pemain per race.</p><div id="names" class="names"></div><p><button class="primary">Mulai snake draft</button></p></form>';drawNames();return}
-if(state.stage===1){
-let p=players[draftPlayer()];
-screen.innerHTML=heading('Snake draft','Pick '+(state.turn+1)+' dari '+players.length*state.slots+' · Putaran draft '+(Math.floor(state.turn/players.length)+1))+'<form class="panel" id="draft"><h2>Giliran '+esc(p.name)+'</h2>'+draftFields()+'<p class="error" aria-live="polite"></p><button class="primary">Simpan pick</button></form><div class="grid">'+players.map(p=>'<div class="panel"><strong>'+esc(p.name)+'</strong><p class="muted">'+(p.team.map(a=>esc(a.name)).join(' · ')||'Belum memilih')+'</p></div>').join('')+'</div>';return}
-if(state.stage===2){screen.innerHTML=heading('Roster pemain','Buka nama atlet untuk meninjau atau menambahkan kemampuan kartunya.')+roster()+button('Pilih atlet untuk Race 1','pick','',true);return}
-if(state.stage===3){
-screen.innerHTML=heading('Pilih atlet','Race '+state.round+' · Setiap pemain memilih satu atlet yang masih tersedia.')+'<form class="panel" id="pick"><div class="names">'+players.map((p,i)=>field(esc(p.name),'<select name="pick'+i+'" required><option value="">Pilih atlet</option>'+p.team.map((a,j)=>p.used.includes(j)?'':'<option value="'+j+'">'+esc(a.name)+'</option>').join('')+'</select>')).join('')+'</div><p><button class="primary">Lihat efek pre-race</button></p></form>';return}
-if(state.stage===4){screen.innerHTML=tablePre();return}
-if(state.stage===5){screen.innerHTML=tableRace();return}
-screen.innerHTML=tableResults();
+  const undoBtn=document.querySelector('#undo');
+  undoBtn.disabled=!history.length;
+  undoBtn.textContent=history.length?'Undo ('+history.length+')':'Undo';
+  nav.innerHTML=stages.map((s,i)=>{
+    const cls=i===state.stage?'step current':i<state.stage?'step done':'step';
+    return '<span class="'+cls+'" '+(i===state.stage?'aria-current="step"':'')+'><span class="step-num">'+(i+1)+'</span>'+s+'</span>';
+  }).join('');
+  const players=state.players;
+  if(state.stage===0){
+    screen.innerHTML=heading('Siap balapan?','Catat roster, hasil dadu fisik, dan urutan efek kartu di meja tanpa perlu buka-tutup buku aturan.','Magical Athlete · CMYK 2025')+
+      '<form id="setup" class="panel"><div class="grid-2">'+field('Jumlah pemain','<select id="count" name="count">'+numopts(2,6,4)+'</select>')+field('Atlet per pemain','<select name="slots" id="slots">'+numopts(1,6,4)+'</select>')+'</div>'+
+      '<p class="muted" style="margin:10px 0 12px">Isi nama searah jarum jam, mulai dari pemain yang draft pertama. Tiap race memakai satu atlet per pemain.</p>'+
+      '<div id="names" class="names"></div>'+
+      '<p style="margin-top:14px"><button class="primary btn-block">Mulai snake draft</button></p></form>';
+    drawNames();
+    announceTurn();
+    return;
+  }
+  if(state.stage===1){
+    const p=players[draftPlayer()];
+    const totalPicks=players.length*state.slots;
+    const pass=Math.floor(state.turn/players.length)+1;
+    const reversePass=((pass-1)%2)===1;
+    const nextIdx=state.turn+1<totalPicks?draftPlayer(state.turn+1):null;
+    const nextLabel=nextIdx===null?'Pick terakhir':players[nextIdx].name;
+    screen.innerHTML=heading('Snake draft','Pick '+(state.turn+1)+' dari '+totalPicks+' · Putaran '+pass,'Urutan '+ (reversePass?'← Balik arah':'→ Searah jarum jam'))+
+      '<div class="draft-turn-bar">'+
+        '<div class="draft-stat" style="background:var(--yellow-soft)"><small>Memilih sekarang</small><strong>'+esc(p.name)+'</strong></div>'+
+        '<div class="draft-stat"><small>Sesudahnya</small><strong>'+esc(nextLabel)+'</strong></div>'+
+        '<div class="draft-stat"><small>Arah draft</small><strong>'+(reversePass?'← Berbalik':'→ Searah')+' · Putaran '+pass+'</strong></div>'+
+      '</div>'+
+      '<form class="panel" id="draft"><h2>Giliran '+esc(p.name)+'</h2>'+draftFields()+'<p class="error" aria-live="polite"></p><button class="primary btn-block" style="margin-top:12px">Simpan pick</button></form>'+
+      '<div class="grid">'+players.map((pl,idx)=>{
+        const active=pl===p;
+        return '<div class="player-card"'+(active?' style="background:var(--yellow-soft)"':'')+'><div class="row spread"><strong>'+esc(pl.name)+'</strong><span class="pill '+(active?'pill-yellow':'pill-muted')+'">'+pl.team.length+'/'+state.slots+'</span></div><div class="team-chips">'+(pl.team.length?pl.team.map(a=>'<span class="pill">'+esc(a.name)+'</span>').join(''):'<span class="muted">Belum memilih</span>')+'</div></div>';
+      }).join('')+'</div>';
+    announceTurn();
+    return;
+  }
+  if(state.stage===2){
+    screen.innerHTML=heading('Roster pemain','Semua atlet dikelompokkan per pemain. Buka catatan kartu jika memakai atlet custom atau ingin menyunting pengingat.')+roster()+'<div style="margin-top:6px">'+button('Pilih atlet untuk Race 1','pick','class="primary btn-block"',true)+'</div>';
+    announceTurn();
+    return;
+  }
+  if(state.stage===3){
+    screen.innerHTML=heading('Pilih atlet · Race '+state.round,'Setiap pemain memilih satu atlet yang masih tersedia untuk turun ke lintasan.')+
+      '<form id="pick" novalidate><div class="grid">'+players.map((p,i)=>pickCardMarkup(p,i)).join('')+'</div><p class="error" aria-live="polite"></p><div class="panel" style="margin-top:14px"><button class="primary btn-block">Lihat efek pre-race</button></div></form>';
+    announceTurn();
+    return;
+  }
+  if(state.stage===4){screen.innerHTML=tablePre();announceTurn();return}
+  if(state.stage===5){screen.innerHTML=tableRace();announceTurn();return}
+  screen.innerHTML=tableResults();
+  announceTurn();
 }
+
 function drawNames(){
-const box=document.querySelector('#names'),count=Number(document.querySelector('#count').value), prev=[...box.querySelectorAll('input')].map(n=>n.value);
-box.innerHTML=Array.from({length:count},(_,i)=>field('Pemain '+(i+1),'<input name="p'+i+'" maxlength="40" placeholder="Pemain '+(i+1)+'" value="'+esc(prev[i])+'">')).join('');
+  const box=document.querySelector('#names'),count=Number(document.querySelector('#count').value), prev=[...box.querySelectorAll('input')].map(n=>n.value);
+  box.innerHTML=Array.from({length:count},(_,i)=>'<div class="seat-card"><div class="seat-badge"><span class="seat-num">'+(i+1)+'</span><span>'+(i===0?'Kursi 1 · Draft pertama':'Kursi '+(i+1))+'</span></div><input name="p'+i+'" aria-label="Nama Pemain '+(i+1)+'" maxlength="40" placeholder="Pemain '+(i+1)+'" value="'+esc(prev[i])+'"></div>').join('');
 }
-screen.addEventListener('change',e=>{if(e.target.id==='count')drawNames();if(e.target.id==='draft-preset')showDraftPower(e.target)});
+
+screen.addEventListener('input',e=>{
+  if(e.target.id==='draft-search'){
+    const chips=document.querySelector('#draft-chips');
+    if(chips)chips.innerHTML=draftChipsMarkup(e.target.value);
+  }
+});
+screen.addEventListener('change',e=>{
+  if(e.target.id==='count')drawNames();
+  if(e.target.id==='draft-preset')showDraftPower(e.target);
+  if(e.target.name==='track'&&state.stage===4){
+    const preview=document.querySelector('#prerace-track-note');
+    if(preview){
+      const isWild=e.target.value==='wild';
+      preview.className='track-card '+(isWild?'wild':'mild');
+      preview.innerHTML='<strong>'+(isWild?'Wild Wilds':'Mild Mile')+'</strong><br><span>'+(isWild?'Bintang (+1 poin) · Batu (tersandung) · Panah (geser posisi & picu reaksi)':'Lintasan mulus 30 petak tanpa efek petak khusus.')+'</span>';
+    }
+  }
+});
 screen.addEventListener('submit',e=>{
-e.preventDefault();const data=new FormData(e.target);
-if(e.target.id==='setup')change(()=>{state.slots=Number(data.get('slots'));state.players=Array.from({length:Number(data.get('count'))},(_,i)=>({name:data.get('p'+i).trim()||'Pemain '+(i+1),team:[],used:[]}));state.stage=1},true);
-if(e.target.id==='draft'){
-const choice=data.get('preset');
-const custom=choice==='custom';
-const name=custom?data.get('athlete').trim():choice;
-const power=custom?Object.fromEntries(rules.map(([k])=>[k,data.get(k).trim()])):racerPowers[name];
-if(!name||!power||state.players.some(p=>p.team.some(a=>a.name.toLowerCase()===name.toLowerCase()))){screen.querySelector('.error').textContent=name?'Atlet ini sudah dipilih.':'Masukkan nama atlet.';return}
-change(()=>{state.players[draftPlayer()].team.push({name,...power,powerSet:true});state.turn++;if(state.turn===state.slots*state.players.length)state.stage=2},true);
-}
-if(e.target.id==='pick')change(()=>{state.players.forEach((p,i)=>{p.pick=Number(data.get('pick'+i))});state.stage=4},true);
-if(e.target.id==='start')change(()=>{
-  state.track=data.get('track');
-  state.stage=5;
-  referee.start(state,Number(data.get('first')));
-},true);
-if(e.target.id.startsWith('gm-'))change(()=>refereeForm(e.target.id,data),true);
+  e.preventDefault();const data=new FormData(e.target);
+  if(e.target.id==='setup')change(()=>{state.slots=Number(data.get('slots'));state.players=Array.from({length:Number(data.get('count'))},(_,i)=>({name:data.get('p'+i).trim()||'Pemain '+(i+1),team:[],used:[]}));state.stage=1},true);
+  if(e.target.id==='draft'){
+    const choice=data.get('preset');
+    const custom=choice==='custom';
+    const name=custom?data.get('athlete').trim():choice;
+    const power=custom?Object.fromEntries(rules.map(([k])=>[k,data.get(k).trim()])):racerPowers[name];
+    if(!name||!power||state.players.some(p=>p.team.some(a=>a.name.toLowerCase()===name.toLowerCase()))){screen.querySelector('.error').textContent=name?'Atlet ini sudah dipilih.':'Masukkan nama atlet.';return}
+    change(()=>{state.players[draftPlayer()].team.push({name,...power,powerSet:true});state.turn++;if(state.turn===state.slots*state.players.length)state.stage=2},true);
+  }
+  if(e.target.id==='pick'){
+    const missing=state.players.find((_,i)=>!data.get('pick'+i));
+    if(missing){
+      const err=screen.querySelector('.error');
+      if(err)err.textContent='Pilih satu atlet untuk '+missing.name+' sebelum melanjutkan.';
+      return;
+    }
+    change(()=>{state.players.forEach((p,i)=>{p.pick=Number(data.get('pick'+i))});state.stage=4},true);
+  }
+  if(e.target.id==='start')change(()=>{
+    state.track=data.get('track');
+    state.stage=5;
+    referee.start(state,Number(data.get('first')));
+  },true);
+  if(e.target.id.startsWith('gm-'))change(()=>refereeForm(e.target.id,data),false);
 });
 screen.addEventListener('click',e=>{
-const b=e.target.closest('button[data-action]');if(!b)return;
-const action=b.dataset.action,index=Number(b.dataset.index);
-if(action==='reset'&&!confirm('Mulai permainan baru?'))return;
-change(()=>{
-switch(action){
-case 'save-rules': {
-const {player,athlete}=b.dataset;
-b.parentElement.querySelectorAll('textarea').forEach(t=>{state.players[player].team[athlete][t.dataset.rule]=t.value.trim();state.players[player].team[athlete].powerSet=true});break;
-}
-case 'pick':state.stage=3;break;
-case 'gm-choice':referee.take(state,'choice',index);break;
-case 'gm-roll':referee.take(state,'roll',index);break;
-case 'gm-confirm':referee.take(state,'confirmMove');break;
-case 'gm-notice':referee.take(state,'notice');break;
-case 'gm-no-egg':referee.take(state,'egg');break;
-case 'gm-resume':referee.resume(state);break;
-case 'round':state.players.forEach(p=>p.used.push(p.pick));state.round++;delete state.track;delete state.gm;state.placed=[];state.log=[];state.die=0;state.stage=3;break;
-case 'reset':state=initial();break;
-}
-},action.startsWith('gm-')||['pick','round','reset'].includes(action));
+  const chip=e.target.closest('button[data-pick-preset]');
+  if(chip){
+    const select=document.querySelector('#draft-preset');
+    if(select){
+      select.value=chip.dataset.pickPreset;
+      showDraftPower(select);
+    }
+    return;
+  }
+  const pickBtn=e.target.closest('button[data-pick-player]');
+  if(pickBtn){
+    const pi=pickBtn.dataset.pickPlayer, val=pickBtn.dataset.pickVal;
+    const select=document.querySelector('#pick-select-'+pi);
+    if(select)select.value=val;
+    pickBtn.parentElement.querySelectorAll('button[data-pick-player]').forEach(btn=>{
+      btn.setAttribute('aria-pressed',String(btn===pickBtn));
+    });
+    const err=screen.querySelector('.error');
+    if(err)err.textContent='';
+    return;
+  }
+  const b=e.target.closest('button[data-action]');if(!b)return;
+  const action=b.dataset.action,index=Number(b.dataset.index);
+  if(action==='reset'&&!confirm('Mulai permainan baru?'))return;
+  change(()=>{
+    switch(action){
+      case 'save-rules': {
+        const {player,athlete}=b.dataset;
+        b.closest('details').querySelectorAll('textarea').forEach(t=>{state.players[player].team[athlete][t.dataset.rule]=t.value.trim();state.players[player].team[athlete].powerSet=true});
+        savedToastKey=player+'-'+athlete;
+        break;
+      }
+      case 'pick':savedToastKey='';state.stage=3;break;
+      case 'gm-choice':referee.take(state,'choice',index);break;
+      case 'gm-roll':referee.take(state,'roll',index);break;
+      case 'gm-confirm':referee.take(state,'confirmMove');break;
+      case 'gm-notice':referee.take(state,'notice');break;
+      case 'gm-no-egg':referee.take(state,'egg');break;
+      case 'gm-resume':referee.resume(state);break;
+      case 'round':state.players.forEach(p=>p.used.push(p.pick));state.round++;delete state.track;delete state.gm;state.placed=[];state.log=[];state.die=0;state.stage=3;break;
+      case 'reset':state=initial();break;
+    }
+  },['pick','round','reset'].includes(action));
 });
-document.querySelector('#undo').addEventListener('click',()=>{if(history.length){state=history.pop();persist();render();window.scrollTo(0,0)}});
+document.querySelector('#undo').addEventListener('click',()=>{
+  if(history.length){
+    state=history.pop();
+    persist();
+    shouldShiftFocus=true;
+    render();
+  }
+});
 render();
 </script>
 </html>

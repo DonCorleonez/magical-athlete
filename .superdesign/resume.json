@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/": {
+      "targetKind": "existing-ui",
+      "projectId": "9c0e9f77-16d2-485a-82cf-b351ab45eece",
+      "activeDraftId": "8d92f418-c2f8-4eef-8f0d-b6332d77602e",
+      "designSystemPath": ".superdesign/design-system.md",
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "dist/index.html",
+        "dist/table.js"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "7954D341E48315A6BF1F332EE80A571950F708811DEF97C2A79FF315F09E532C",
+        "dist/index.html": "08D5992FDD577490A4C77FA3F0275DD5DF807C2BC8A0CF1B5A65FDD9E4EFC01D",
+        "dist/table.js": "1CBBA783DAD03FF957ADF9E4461DEFF7ADE32DD32A8DD16A4919720B9633AF8B"
+      },
+      "drafts": {
+        "8d92f418-c2f8-4eef-8f0d-b6332d77602e": {
+          "title": "Opsi A — Panel Aksi di Atas Posisi",
+          "visualDirection": "rulebook-print-option-a-390px",
+          "currentVersion": 1
+        },
+        "02f13b40-ae0e-48f7-9bec-677bc69159ff": {
+          "title": "Opsi B — Posisi Ringkas di Header",
+          "visualDirection": "rulebook-print-option-b-390px",
+          "currentVersion": 1
+        }
+      },
+      "updatedAt": "2026-11-27T21:35:30+07:00"
+    }
+  }
+}

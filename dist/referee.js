@@ -8,8 +8,17 @@ const referee = (() => {
   const racer = (s,i) => s.players[i].team[s.players[i].pick];
   const live = (g,i) => g.status[i] === 'race';
   const ordered = (s,g) => g.pos.map((_,i)=>(i+s.active)%g.pos.length).filter(i=>live(g,i));
-  const leaders = g => g.pos.map((_,i)=>i).filter(i=>live(g,i)&&g.pos[i]===Math.max(...g.pos.filter((_,j)=>live(g,j))));
-  const tail = g => g.pos.map((_,i)=>i).filter(i=>live(g,i)&&g.pos[i]===Math.min(...g.pos.filter((_,j)=>live(g,j))));
+  const hasTrackRacer = g => g.pos.some((p,j)=>live(g,j)&&p>0);
+  const leaders = g => {
+    if(!hasTrackRacer(g))return [];
+    const max=Math.max(...g.pos.filter((_,j)=>live(g,j)));
+    return g.pos.map((_,i)=>i).filter(i=>live(g,i)&&g.pos[i]===max);
+  };
+  const tail = g => {
+    if(!hasTrackRacer(g))return [];
+    const min=Math.min(...g.pos.filter((_,j)=>live(g,j)));
+    return g.pos.map((_,i)=>i).filter(i=>live(g,i)&&g.pos[i]===min);
+  };
   const display = n => n===0?'Start':n>=finishLine?'Finis':'Petak '+n;
   const task = (type, props={}) => ({type,...props});
   const move = (i,d,label,extra={}) => task('move',{i,d,label,...extra});
@@ -28,7 +37,7 @@ const referee = (() => {
   }
   function base(s,g,i){return g.copied[i] || name(s,i)}
   function power(s,g,i){
-    if(base(s,g,i)!=='Copycat')return base(s,g,i);
+    if(base(s,g,i)!=='Copycat'||g.pos[i]===0)return base(s,g,i);
     const lead=leaders(g);
     if(!lead.length||(lead.length===1&&lead[0]===i))return 'Copycat';
     const choices=lead.filter(j=>j!==i&&base(s,g,j)!=='Copycat');
@@ -44,7 +53,7 @@ const referee = (() => {
   function conclude(s,g){
     s.results ||= [];
     s.results.push({round:s.round,track:config(s),places:s.placed.map(i=>({player:s.players[i].name,racer:name(s,i),power:base(s,g,i)})),scores:[...s.scores]});
-    s.nextStarter=g.out[0] ?? tail(g).find(i=>!s.placed.includes(i));
+    s.nextStarter=g.out[0] ?? tail(g).find(i=>!s.placed.includes(i)) ?? ordered(s,g).find(i=>!s.placed.includes(i));
     s.stage=6;
     g.q=[];
   }
@@ -119,7 +128,7 @@ const referee = (() => {
   }
   function copyChoices(s,g){
     const choices=[];
-    for(const i of ordered(s,g).filter(i=>base(s,g,i)==='Copycat')){
+    for(const i of ordered(s,g).filter(i=>base(s,g,i)==='Copycat'&&g.pos[i]>0)){
       const candidates=leaders(g).filter(j=>j!==i&&base(s,g,j)!=='Copycat');
       const key=candidates.join(',');
       if(g.copyAsked[i]===key)continue;
@@ -135,15 +144,18 @@ const referee = (() => {
       g.predicted[i]=true;
       next.push(select(name(s,i)+' · Tebak pemenang',ordered(s,g).map(j=>option(name(s,j),task('prediction',{i,j})))));
     }
-    if(k==='Cheerleader')next.push(prompt('Cheerleader · Majukan atlet terakhir?',[
+    if(k==='Cheerleader'&&g.pos[i]>0&&tail(g).length)next.push(prompt('Cheerleader · Majukan atlet terakhir?',[
       option('Beri dorongan',ability(i,'Cheerleader',task('batch',{moves:tail(g).map(j=>({i:j,d:2})),label:'Cheerleader'}),move(i,1,'Cheerleader')))]));
-    if(k==='Hypnotist'&&others.length)next.push(prompt('Hypnotist · Tarik atlet ke '+display(g.pos[i])+'?',others.map(j=>option(name(s,j),ability(i,'Hypnotist',task('pull',{i,j}))))));
-    if(k==='Third Wheel'){
-      const spaces=[...new Set(ordered(s,g).map(j=>g.pos[j]))].filter(p=>p!==g.pos[i]&&ordered(s,g).filter(j=>g.pos[j]===p).length===2);
+    if(k==='Hypnotist'&&g.pos[i]>0){
+      const pullTargets=others.filter(j=>g.pos[j]!==g.pos[i]);
+      if(pullTargets.length)next.push(prompt('Hypnotist · Tarik atlet ke '+display(g.pos[i])+'?',pullTargets.map(j=>option(name(s,j)+' · '+display(g.pos[j]),ability(i,'Hypnotist',task('pull',{i,j}))))));
+    }
+    if(k==='Third Wheel'&&g.pos[i]>0){
+      const spaces=[...new Set(ordered(s,g).map(j=>g.pos[j]))].filter(p=>p>0&&p!==g.pos[i]&&ordered(s,g).filter(j=>g.pos[j]===p).length===2);
       if(spaces.length)next.push(prompt('Third Wheel · Teleportasi?',spaces.map(p=>option(display(p),ability(i,'Third Wheel',warp(i,p,'Third Wheel'))))));
     }
-    if(k==='Lovable Loser'&&tail(g).length===1&&tail(g)[0]===i)next.push(ability(i,'Lovable Loser',task('score',{i,d:1,label:'Sendirian di posisi terakhir'})));
-    if(k==='Party Animal'){
+    if(k==='Lovable Loser'&&g.pos[i]>0&&tail(g).length===1&&tail(g)[0]===i)next.push(ability(i,'Lovable Loser',task('score',{i,d:1,label:'Sendirian di posisi terakhir'})));
+    if(k==='Party Animal'&&g.pos[i]>0){
       const moves=others.filter(j=>g.pos[j]!==g.pos[i]).map(j=>({i:j,d:Math.sign(g.pos[i]-g.pos[j])}));
       if(moves.length)next.push(ability(i,'Party Animal',task('batch',{moves,label:'Party Animal'})));
     }
@@ -162,9 +174,9 @@ const referee = (() => {
     }
     const roll=option('Lempar dadu fisik',task('guess'));
     if(k==='Legs')return [select('Legs · Pilih langkah utama',[option('Jog · maju 5 tanpa dadu',ability(i,'Legs'),task('mainMove',{i,value:5}),task('after')),roll])];
-    if(k==='Flip Flop'){
-      const choices=ordered(s,g).filter(j=>j!==i).map(j=>option('Tukar dengan '+name(s,j)+' · '+display(g.pos[j]),ability(i,'Flip Flop',task('swap',{i,j})),task('after')));
-      return [select('Flip Flop · Tukar petak atau lempar?', [...choices,roll])];
+    if(k==='Flip Flop'&&g.pos[i]>0){
+      const choices=ordered(s,g).filter(j=>j!==i&&g.pos[j]!==g.pos[i]).map(j=>option('Tukar dengan '+name(s,j)+' · '+display(g.pos[j]),ability(i,'Flip Flop',task('swap',{i,j})),task('after')));
+      if(choices.length)return [select('Flip Flop · Tukar petak atau lempar?', [...choices,roll])];
     }
     return [task('guess')];
   }
@@ -207,13 +219,13 @@ const referee = (() => {
     const modifiers=[];
     if(k==='Blimp')modifiers.push([i,g.start<15?3:-1,'Blimp']);
     if(k==='Hare')modifiers.push([i,2,'Hare']);
-    if(k==='Party Animal'){
+    if(k==='Party Animal'&&g.pos[i]>0){
       const share=ordered(s,g).filter(j=>j!==i&&g.pos[j]===g.pos[i]).length;
       if(share)modifiers.push([i,share,'Party Animal']);
     }
     for(const j of ordered(s,g)){
       const p=power(s,g,j);
-      if(p==='Coach'&&g.pos[j]===g.pos[i])modifiers.push([j,1,'Coach']);
+      if(p==='Coach'&&(j===i||(g.pos[i]>0&&g.pos[j]===g.pos[i])))modifiers.push([j,1,'Coach']);
       if(p==='Gunk'&&j!==i)modifiers.push([j,-1,'Gunk']);
     }
     const total=modifiers.reduce((sum,m)=>sum+m[1],value);
@@ -248,7 +260,7 @@ const referee = (() => {
   function follow(s,g,t){
     for(let n=t.index;n<t.riders.length;n++){
       const i=t.riders[n];
-      if(!live(g,i)||t.dest.some(d=>d.i===i))continue;
+      if(!live(g,i)||g.pos[i]===0||t.dest.some(d=>d.i===i))continue;
       const neighbors=t.dest.filter(d=>g.pos[d.i]===g.pos[i]);
       if(!neighbors.length)continue;
       const next=task('ride',{...t,index:n+1});
@@ -303,19 +315,19 @@ const referee = (() => {
         if(powers[i]==='Huge Baby'){
           for(const j of prior.filter(j=>j!==i&&live(g,j)&&g.pos[j]===p))react(i,ability(i,'Huge Baby',put(j,p-1,'Huge Baby')));
         }
-      }
-      if(powers[i]==='Baba Yaga'){
-        for(const j of stationary)react(i,ability(i,'Baba Yaga',task('trip',{i:j,label:'Baba Yaga'})));
-      }
-      for(const j of stationary.filter(j=>powers[j]==='Baba Yaga'))react(j,ability(j,'Baba Yaga',task('trip',{i,label:'Baba Yaga'})));
-      if(stationary.length===1){
-        if(powers[i]==='M.O.U.T.H.')react(i,ability(i,'M.O.U.T.H.',task('eliminate',{i:stationary[0]})));
-        for(const j of owners(s,g,'Romantic'))react(j,ability(j,'Romantic',move(j,2,'Romantic')));
+        if(powers[i]==='Baba Yaga'){
+          for(const j of stationary)react(i,ability(i,'Baba Yaga',task('trip',{i:j,label:'Baba Yaga'})));
+        }
+        for(const j of stationary.filter(j=>powers[j]==='Baba Yaga'))react(j,ability(j,'Baba Yaga',task('trip',{i,label:'Baba Yaga'})));
+        if(stationary.length===1){
+          if(powers[i]==='M.O.U.T.H.')react(i,ability(i,'M.O.U.T.H.',task('eliminate',{i:stationary[0]})));
+          for(const j of owners(s,g,'Romantic'))react(j,ability(j,'Romantic',move(j,2,'Romantic')));
+        }
       }
       assisted.push(...custom(s,i,'move',0));
       if(d.rider)assisted.push(...activate(s,g,i,'Suckerfish mengikuti'));
     }
-    const duels=owners(s,g,'Duelist').filter(i=>prior.some(j=>j!==i&&live(g,j)&&g.pos[j]===g.pos[i])&&dest.some(d=>g.pos[d.i]===g.pos[i]));
+    const duels=owners(s,g,'Duelist').filter(i=>g.pos[i]>0&&prior.some(j=>j!==i&&live(g,j)&&g.pos[j]===g.pos[i])&&dest.some(d=>g.pos[d.i]===g.pos[i]));
     for(const i of duels)react(i,task('offerDuel',{i}));
     const order=ordered(s,g);
     board.sort((a,b)=>order.indexOf(a.i)-order.indexOf(b.i));
@@ -323,6 +335,7 @@ const referee = (() => {
     return [...board,...copyChoices(s,g),...babyEffects,...impacts.flatMap(item=>item.jobs),...assisted];
   }
   function duel(s,g,i){
+    if(g.pos[i]===0)return [];
     const options=ordered(s,g).filter(j=>j!==i&&g.pos[j]===g.pos[i]).map(j=>option('Tantang '+name(s,j),task('duel',{i,j})));
     return options.length?[prompt(name(s,i)+' · Duel dengan atlet satu petak?',options,'Lewati duel')]:[];
   }
