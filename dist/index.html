@@ -243,7 +243,7 @@ small,.muted{color:var(--color-ink-soft);font-size:14px;font-weight:700}
   border:3px solid var(--color-ink);
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-lg);
-  padding:22px 20px 20px;
+  padding:18px 20px 16px;
   margin:0 0 18px;
 }
 .hero-panel.hero-setup,
@@ -265,6 +265,10 @@ small,.muted{color:var(--color-ink-soft);font-size:14px;font-weight:700}
   padding:4px 12px;
   border-radius:999px;
   margin-bottom:10px;
+}
+.hero-panel.hero-draft .hero-kicker{
+  background:var(--color-pink);
+  color:var(--color-ink);
 }
 .hero-sub{
   color:var(--color-paper);
@@ -629,7 +633,7 @@ form{margin:0}
 .dna-card-grid{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:16px;
+  gap:20px;
 }
 @media(max-width:1024px){
   .dna-card-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -661,26 +665,31 @@ form{margin:0}
   outline-offset:-3px;
 }
 .dna-card .band{
-  height:12px;
+  height:16px;
   background:var(--c,var(--color-primary));
   border-bottom:3px solid var(--color-ink);
 }
 .dna-card .art{
-  height:88px;
+  height:86px;
   display:grid;
   place-items:center;
   position:relative;
-  background:var(--color-white);
+  background:var(--color-paper);
   border-bottom:2px solid var(--color-ink);
 }
 .dna-card .art .initial{
+  display:grid;
+  place-items:center;
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  border:3px solid var(--color-ink);
+  background:var(--c,var(--color-primary));
+  color:var(--c-fg,var(--color-ink));
+  box-shadow:var(--shadow-low);
   font-family:var(--font-display);
-  font-size:54px;
+  font-size:34px;
   line-height:1;
-  color:var(--c,var(--color-primary));
-  -webkit-text-stroke:1.5px var(--color-ink);
-  paint-order:stroke fill;
-  text-shadow:3px 3px 0 var(--color-ink);
 }
 .dna-card .art .die{
   position:absolute;
@@ -734,7 +743,7 @@ form{margin:0}
   text-shadow:2px 2px 0 var(--color-ink);
 }
 .dna-card.drafted .draft-btn{
-  background:var(--color-success);
+  background:var(--color-paper);
   color:var(--color-ink);
   text-shadow:none;
 }
@@ -794,6 +803,17 @@ form{margin:0}
 }
 .dna-card.drafted .stamp,
 .pick-choice.is-picked .stamp{display:block}
+.pick-choice .stamp{
+  left:auto;
+  right:8px;
+  top:14px;
+  transform:rotate(3deg);
+  padding:2px 8px;
+  border-radius:6px;
+}
+.pick-choice.is-picked .pick-choice-body{
+  padding-right:74px;
+}
 
 .draft-turn-bar{
   display:grid;
@@ -1186,7 +1206,7 @@ form{margin:0}
   text-align:center;
 }
 .space-band{
-  height:8px;
+  height:12px;
   background:var(--space-c,var(--color-secondary));
   border-bottom:2px solid var(--color-ink);
 }
@@ -1367,7 +1387,7 @@ form{margin:0}
   gap:8px;
 }
 .recent-list li{
-  border-left:5px solid var(--color-primary);
+  border-left:6px solid var(--color-error);
   background:var(--color-white);
   border-top:2px solid var(--color-ink);
   border-right:2px solid var(--color-ink);
@@ -1817,6 +1837,10 @@ function render(){
     return '<span class="'+cls+'" style="--c-pill:'+pillOutlineColors[i%pillOutlineColors.length]+'" '+(i===state.stage?'aria-current="step"':'')+'><span class="step-num">'+(i+1)+'</span>'+s+'</span>';
   }).join('');
   if(state.stage!==6)lastResultsRound=null;
+  if(state.stage!==2&&state.stage!==6){
+    confettiParts=[];
+    if(confettiCtx)confettiCtx.clearRect(0,0,confettiCv.width,confettiCv.height);
+  }
   const players=state.players;
   if(state.stage===0){
     screen.innerHTML=heading('SIAP BALAPAN?','Catat roster, hasil dadu fisik, dan urutan efek kartu di meja tanpa perlu buka-tutup buku aturan. <b>Adu bayi melawan pisang!</b>','MAGICAL ATHLETE · CMYK 2025','hero-setup')+
@@ -1848,7 +1872,7 @@ function render(){
       const picks=pl.team.map(a=>esc(a.name)).join(', ')||'Belum memilih';
       return '<span class="tray-player-pill'+(isCur?' is-turn':'')+'" title="'+esc(picks)+'">'+esc(pl.name)+' <span class="num-display">'+pl.team.length+'/'+state.slots+'</span></span>';
     }).join('');
-    screen.innerHTML=heading('DRAFT YOUR TEAM!','Pick <b class="num-display">'+(state.turn+1)+' / '+totalPicks+'</b> · Giliran <b>'+esc(p.name)+'</b> — ketuk kartu untuk merekrut atlet ke timnya.','Putaran '+pass+' · '+(reversePass?'← Balik arah':'→ Searah jarum jam'))+
+    screen.innerHTML=heading('DRAFT YOUR TEAM!','Pick <b class="num-display">'+(state.turn+1)+' / '+totalPicks+'</b> · Giliran <b>'+esc(p.name)+'</b> — ketuk kartu untuk merekrut atlet ke timnya.','Putaran '+pass+' · '+(reversePass?'← Balik arah':'→ Searah jarum jam'),'hero-draft')+
       '<section class="howto" aria-label="Status snake draft">'+
         '<div class="howto-step"><span class="howto-num" style="--c-pill:#DF76A5">1</span><span>Memilih sekarang:<br><strong>'+esc(p.name)+'</strong></span></div>'+
         '<div class="howto-step"><span class="howto-num" style="--c-pill:#EB8212">2</span><span>Sesudahnya:<br><strong>'+esc(nextLabel)+'</strong></span></div>'+

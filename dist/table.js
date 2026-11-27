@@ -67,7 +67,7 @@ function tablePre(){
           '<div class="racer-mini-band" style="background:'+c+'"></div>'+
           '<div class="row spread"><span class="row" style="gap:8px"><span class="racer-init-chip" style="background:'+c+';color:'+racerFg(c)+'" aria-hidden="true">'+esc((a.name||'?')[0])+'</span><strong style="font-family:var(--font-display);font-size:17px">'+esc(a.name)+'</strong></span><span class="pill pill-muted">Urutan <span class="num-display">#'+(pos+1)+'</span></span></div>'+
           '<span class="muted">Pemain: '+esc(p.name)+'</span>'+
-          (a.pre?'<span class="pill pill-orange" style="align-self:flex-start">Pre-race: '+esc(a.pre)+'</span>':'')+
+          (a.pre?'<span class="pill pill-orange" style="align-self:flex-start;border-radius:10px;padding:6px 10px;line-height:1.35">Pre-race: '+esc(a.pre)+'</span>':'')+
           (eff&&!a.pre?'<small>'+esc(eff)+'</small>':'')+
         '</div>';
       }).join('')+'</div>'+
@@ -429,13 +429,13 @@ function tableRace(){
     '</div>'+
     '<div class="race-col">'+
       '<section class="panel">'+
-        '<div class="row spread"><h2>Posisi di papan</h2><span class="pill pill-muted">Start <span class="num-display">0</span> · Finis <span class="num-display">'+referee.finishLine+'</span></span></div>'+
+        '<div class="row spread"><h2>Posisi di papan</h2><span class="pill pill-pink">Start <span class="num-display">0</span> · Finis <span class="num-display">'+referee.finishLine+'</span></span></div>'+
         '<p class="muted" style="margin:6px 0 8px">'+profile+'</p>'+
         renderTrackBoard(g,t,raceColors)+
         '<div class="racer-rows">'+rowsHtml+'</div>'+
       '</section>'+
       syncForm()+
-      '<details><summary>Riwayat race (<span class="num-display">'+state.log.length+'</span>)</summary>'+(state.log.length?'<ol class="full-log">'+state.log.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ol>':'<p class="muted">Belum ada kejadian tercatat.</p>')+'</details>'+
+      '<details><summary><span>Riwayat race (<span class="num-display">'+state.log.length+'</span>)</span></summary>'+(state.log.length?'<ol class="full-log">'+state.log.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ol>':'<p class="muted">Belum ada kejadian tercatat.</p>')+'</details>'+
       '<details><summary>Kartu dan kemampuan</summary>'+roster(true)+'</details>'+
     '</div>'+
   '</div>';
