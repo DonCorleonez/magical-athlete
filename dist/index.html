@@ -725,14 +725,57 @@ form{margin:0}
   min-height:44px;
   padding:8px 10px;
   background:var(--color-primary);
-  color:var(--color-ink);
-  font-family:var(--font-display);
-  font-size:16px;
+  color:var(--color-white);
+  font-family:var(--font-ui);
+  font-weight:900;
+  font-size:19px;
   letter-spacing:.03em;
+  text-shadow:2px 2px 0 var(--color-ink);
 }
 .dna-card.drafted .draft-btn{
   background:var(--color-success);
   color:var(--color-ink);
+  text-shadow:none;
+}
+.slot-tag{
+  display:inline-block;
+  border:2px solid var(--color-ink);
+  border-radius:999px;
+  padding:1px 7px;
+  font-family:var(--font-ui);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+.tray-others{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  padding-top:10px;
+  border-top:2px solid rgba(255,255,255,.22);
+}
+.tray-player-pill{
+  background:var(--color-paper);
+  color:var(--color-ink);
+  border:2px solid var(--color-ink);
+  border-radius:999px;
+  padding:4px 10px;
+  font-size:13px;
+  font-weight:800;
+}
+.tray-player-pill.is-turn{
+  background:var(--color-secondary);
+}
+.racer-init-chip{
+  display:inline-grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border:2px solid var(--color-ink);
+  border-radius:8px;
+  font-family:var(--font-display);
+  font-size:16px;
+  flex:0 0 auto;
 }
 .stamp{
   position:absolute;
@@ -1602,43 +1645,72 @@ function availableRacers(){
   const drafted=new Set(state.players.flatMap(p=>p.team.map(a=>normalize(a.name))));
   return racerNames.filter(name=>!drafted.has(normalize(name)));
 }
-function draftChipsMarkup(query=''){
-  const avail=availableRacers();
+function firstPowerLine(power){
+  for(const [k] of rules){
+    if(power?.[k]){
+      const line=String(power[k]).split('\n')[0].trim();
+      return line.length>115?line.slice(0,112)+'…':line;
+    }
+  }
+  return 'Atlet dasar tanpa teks kemampuan khusus.';
+}
+function draftOwnerMap(){
+  const map=new Map();
+  state.players.forEach(pl=>pl.team.forEach(a=>map.set(normalize(a.name),pl.name)));
+  return map;
+}
+function draftGridMarkup(query=''){
+  const owners=draftOwnerMap();
   const q=normalize(query);
-  const filtered=q?avail.filter(n=>normalize(n).includes(q)):avail;
-  const shown=filtered.slice(0,8);
-  const currentPreset=document.querySelector('#draft-preset')?.value||'';
-  return shown.map(name=>'<button type="button" class="chip-btn" data-pick-preset="'+esc(name)+'" aria-pressed="'+(currentPreset===name)+'">'+esc(name)+'</button>').join('')
-    +'<button type="button" class="chip-btn" data-pick-preset="custom" aria-pressed="'+(currentPreset==='custom')+'">+ Atlet custom</button>'
-    +(q&&!filtered.length?'<span class="muted">Tidak ada kecocokan untuk “'+esc(query)+'”.</span>':'');
+  const filtered=q?racerNames.filter(n=>normalize(n).includes(q)):racerNames;
+  if(!filtered.length)return '<div class="panel"><p class="muted">Waduh, tidak ada atlet bernama “'+esc(query)+'” — coba cari kata lain!</p></div>';
+  return '<div class="dna-card-grid">'+filtered.map(name=>{
+    const owner=owners.get(normalize(name));
+    const drafted=Boolean(owner);
+    const c=racerColor(name);
+    const title=RACER_TITLES[name]||'ATLET DASAR';
+    const desc=firstPowerLine(racerPowers[name]);
+    return '<article class="dna-card'+(drafted?' drafted':'')+'" style="--c:'+c+';--c-fg:'+racerFg(c)+'">'+
+      '<span class="stamp">DRAFTED!</span>'+
+      '<div class="band"></div>'+
+      '<div class="art"><span class="initial" aria-hidden="true">'+esc(name[0])+'</span>'+DIE_MINI+'</div>'+
+      '<div class="body">'+
+        '<h3>'+esc(name)+'</h3>'+
+        '<span class="card-power-tag">'+esc(title)+'</span>'+
+        '<p>'+esc(desc)+'</p>'+
+        (drafted?'<span class="pill pill-muted" style="align-self:flex-start">Tim '+esc(owner)+'</span>':'')+
+        '<button type="button" class="draft-btn" data-draft-racer="'+esc(name)+'"'+(drafted?' disabled':'')+'>'+(drafted?'SUDAH DIPILIH':'DRAFT!')+'</button>'+
+      '</div>'+
+    '</article>';
+  }).join('')+'</div>';
 }
 function draftFields(){
-  return field('Cari cepat nama atlet','<input type="search" id="draft-search" placeholder="Ketik nama atlet, mis. Suckerfish" autocomplete="off" autocorrect="off" spellcheck="false">')+
-    '<div class="draft-chips" id="draft-chips">'+draftChipsMarkup()+'</div>'+
-    field('Pilih atlet','<select id="draft-preset" name="preset" required><option value="">Pilih dari daftar ('+availableRacers().length+' tersisa)</option>'+
-      availableRacers().map(name=>'<option>'+esc(name)+'</option>').join('')+
-      '<option value="custom">Tambah atlet sendiri</option></select>')+
-    '<div id="draft-custom" hidden>'+field('Nama atlet','<input name="athlete" maxlength="80" placeholder="Nama pada kartu">')+ruleEditor()+'</div>'+
-    '<div id="draft-power" class="power-preview" aria-live="polite"></div>';
+  return '<div class="panel">'+
+    field('Cari cepat nama atlet','<input type="search" id="draft-search" placeholder="Ketik nama atlet, mis. Suckerfish" autocomplete="off" autocorrect="off" spellcheck="false">')+
+    '<details id="draft-custom-box" style="margin:10px 0 0;box-shadow:none"><summary>+ Tambah atlet custom</summary>'+
+      field('Nama atlet custom','<input name="athlete" maxlength="80" placeholder="Nama pada kartu">')+
+      ruleEditor()+
+      '<p style="margin-top:10px"><button type="submit" class="btn-teal btn-block">Simpan atlet custom</button></p>'+
+    '</details>'+
+    '<p class="error" aria-live="polite"></p>'+
+  '</div>'+
+  '<div id="draft-cards">'+draftGridMarkup()+'</div>';
 }
-function showDraftPower(select){
-  const custom=select.value==='custom';
-  const form=select.form;
-  document.querySelector('#draft-custom').hidden=!custom;
-  form.elements.athlete.required=custom;
-  const box=document.querySelector('#draft-power');
-  if(custom){
-    box.innerHTML='<strong>Atlet custom</strong><p class="muted">Isi nama dan catatan kekuatan kartu di kolom di atas sebelum menyimpan pick.</p>';
-  }else if(racerPowers[select.value]){
-    box.innerHTML='<strong>'+esc(select.value)+'</strong>'+powerSummary(racerPowers[select.value]);
-  }else{
-    box.innerHTML='';
+function draftAthlete(name, power){
+  if(!name||!power||state.players.some(p=>p.team.some(a=>a.name.toLowerCase()===name.toLowerCase()))){
+    const err=screen.querySelector('.error');
+    if(err)err.textContent=name?'Atlet itu sudah masuk tim lain — pilih yang masih tersedia!':'Masukkan nama atlet lebih dulu.';
+    return false;
   }
-  const chips=document.querySelector('#draft-chips');
-  if(chips){
-    const q=document.querySelector('#draft-search')?.value||'';
-    chips.innerHTML=draftChipsMarkup(q);
-  }
+  change(()=>{
+    state.players[draftPlayer()].team.push({name,...power,powerSet:true});
+    state.turn++;
+    if(state.turn===state.slots*state.players.length){
+      state.stage=2;
+      window.confettiBurst?.(160);
+    }
+  },state.turn+1===state.slots*state.players.length);
+  return true;
 }
 function restorePresets(snapshot){
   snapshot?.players?.forEach(player=>player.team?.forEach(a=>{
@@ -1658,12 +1730,15 @@ function ruleEditor(){
 function roster(readonly=false){
   return '<div class="grid">'+state.players.map((p,i)=>{
     const availCount=p.team.filter((_,j)=>!p.used.includes(j)).length;
-    return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal">'+availCount+' / '+p.team.length+' tersedia</span></div>'+
+    return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal"><span class="num-display">'+availCount+'/'+p.team.length+'</span> tersedia</span></div>'+
       p.team.map((a,j)=>{
         const isUsed=p.used.includes(j);
+        const c=racerColor(a.name);
+        const title=RACER_TITLES[presetName(a.name)]||'KARTU CUSTOM';
         const effHtml=rules.map(([k,l])=>a[k]?'<div class="effect"><span class="effect-label">'+l+'</span><br>'+esc(a[k])+'</div>':'').join('');
         return '<div class="racer-card'+(isUsed?' used':'')+'">'+
-          '<div class="row spread"><strong>'+esc(a.name)+'</strong><span class="pill '+(isUsed?'pill-muted':'pill-yellow')+'">'+(isUsed?'Sudah turun':'Tersedia')+'</span></div>'+
+          '<div class="racer-mini-band" style="background:'+c+'"></div>'+
+          '<div class="row spread"><div class="row" style="gap:8px"><span class="racer-init-chip" style="background:'+c+';color:'+racerFg(c)+'" aria-hidden="true">'+esc((a.name||'?')[0])+'</span><div><strong style="font-family:var(--font-display);font-size:17px">'+esc(a.name)+'</strong><br><span class="card-power-tag" style="--c:'+c+';--c-fg:'+racerFg(c)+'">'+esc(title)+'</span></div></div><span class="pill '+(isUsed?'pill-muted':'pill-yellow')+'">'+(isUsed?'Sudah turun':'Tersedia')+'</span></div>'+
           (effHtml||'<p class="muted" style="margin-top:6px">Belum ada kemampuan yang dicatat.</p>')+
           (readonly?'':'<details style="margin:10px 0 0;padding:10px 12px;box-shadow:none"'+(savedToastKey===i+'-'+j?' open':'')+'><summary>Edit catatan kartu</summary>'+
             rules.map(([k,label])=>field(label,'<textarea rows="2" data-player="'+i+'" data-athlete="'+j+'" data-rule="'+k+'">'+esc(a[k])+'</textarea>')).join('')+
@@ -1682,15 +1757,21 @@ function pickCardMarkup(p,i){
     avail.map(({a,j})=>'<option value="'+j+'">'+esc(a.name)+'</option>').join('')+'</select>';
   const cardsHtml='<div class="pick-group" role="group" aria-label="Pilih atlet untuk '+esc(p.name)+'">'+
     avail.map(({a,j})=>{
+      const c=racerColor(a.name);
+      const title=RACER_TITLES[presetName(a.name)]||'KARTU CUSTOM';
       const summaryText=rules.filter(([k])=>a[k]).map(([k,l])=>l+': '+a[k]).join(' · ')||'Tanpa teks kemampuan';
-      return '<button type="button" class="pick-choice" data-pick-player="'+i+'" data-pick-val="'+j+'" aria-pressed="false">'+
-        '<strong>'+esc(a.name)+'</strong>'+
-        '<span class="pick-choice-sub">'+esc(summaryText)+'</span>'+
+      return '<button type="button" class="pick-choice" data-pick-player="'+i+'" data-pick-val="'+j+'" aria-pressed="false" style="--c:'+c+';--c-fg:'+racerFg(c)+'">'+
+        '<span class="stamp">SIAP!</span>'+
+        '<div class="pick-choice-band"></div>'+
+        '<div class="pick-choice-body">'+
+          '<div class="row spread" style="width:100%"><span class="row" style="gap:8px"><span class="racer-init-chip" style="background:'+c+';color:'+racerFg(c)+'" aria-hidden="true">'+esc((a.name||'?')[0])+'</span><strong style="font-family:var(--font-display);font-size:18px">'+esc(a.name)+'</strong></span><span class="card-power-tag">'+esc(title)+'</span></div>'+
+          '<span class="pick-choice-sub">'+esc(summaryText)+'</span>'+
+        '</div>'+
       '</button>';
     }).join('')+
   '</div>';
   const usedHtml=used.length?'<div class="team-chips">'+used.map(({a})=>'<span class="pill pill-muted">'+esc(a.name)+' · Sudah turun</span>').join('')+'</div>':'';
-  return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal">'+avail.length+' tersedia</span></div>'+selectHtml+cardsHtml+usedHtml+'</section>';
+  return '<section class="player-card"><div class="row spread"><h2>'+esc(p.name)+'</h2><span class="pill pill-teal"><span class="num-display">'+avail.length+'</span> tersedia</span></div>'+selectHtml+cardsHtml+usedHtml+'</section>';
 }
 
 function announceTurn(){
@@ -1749,34 +1830,52 @@ function render(){
     const reversePass=((pass-1)%2)===1;
     const nextIdx=state.turn+1<totalPicks?draftPlayer(state.turn+1):null;
     const nextLabel=nextIdx===null?'Pick terakhir':players[nextIdx].name;
-    screen.innerHTML=heading('Snake draft','Pick '+(state.turn+1)+' dari '+totalPicks+' · Putaran '+pass,'Urutan '+ (reversePass?'← Balik arah':'→ Searah jarum jam'))+
-      '<div class="draft-turn-bar">'+
-        '<div class="draft-stat" style="background:var(--yellow-soft)"><small>Memilih sekarang</small><strong>'+esc(p.name)+'</strong></div>'+
-        '<div class="draft-stat"><small>Sesudahnya</small><strong>'+esc(nextLabel)+'</strong></div>'+
-        '<div class="draft-stat"><small>Arah draft</small><strong>'+(reversePass?'← Berbalik':'→ Searah')+' · Putaran '+pass+'</strong></div>'+
-      '</div>'+
-      '<form class="panel" id="draft"><h2>Giliran '+esc(p.name)+'</h2>'+draftFields()+'<p class="error" aria-live="polite"></p><button class="primary btn-block" style="margin-top:12px">Simpan pick</button></form>'+
-      '<div class="grid">'+players.map((pl,idx)=>{
-        const active=pl===p;
-        return '<div class="player-card"'+(active?' style="background:var(--yellow-soft)"':'')+'><div class="row spread"><strong>'+esc(pl.name)+'</strong><span class="pill '+(active?'pill-yellow':'pill-muted')+'">'+pl.team.length+'/'+state.slots+'</span></div><div class="team-chips">'+(pl.team.length?pl.team.map(a=>'<span class="pill">'+esc(a.name)+'</span>').join(''):'<span class="muted">Belum memilih</span>')+'</div></div>';
-      }).join('')+'</div>';
+    const slotsHtml=Array.from({length:state.slots},(_,si)=>{
+      const a=p.team[si];
+      if(a){
+        const c=racerColor(a.name);
+        return '<div class="slot filled"><b>'+esc(a.name)+'</b><span class="slot-tag" style="background:'+c+';color:'+racerFg(c)+'">● RACER '+(si+1)+'</span></div>';
+      }
+      return '<div class="slot">SLOT '+(si+1)+'</div>';
+    }).join('');
+    const othersHtml=players.map(pl=>{
+      const isCur=pl===p;
+      const picks=pl.team.map(a=>esc(a.name)).join(', ')||'Belum memilih';
+      return '<span class="tray-player-pill'+(isCur?' is-turn':'')+'" title="'+esc(picks)+'">'+esc(pl.name)+' <span class="num-display">'+pl.team.length+'/'+state.slots+'</span></span>';
+    }).join('');
+    screen.innerHTML=heading('DRAFT YOUR TEAM!','Pick <b class="num-display">'+(state.turn+1)+' / '+totalPicks+'</b> · Giliran <b>'+esc(p.name)+'</b> — ketuk kartu untuk merekrut atlet ke timnya.','Putaran '+pass+' · '+(reversePass?'← Balik arah':'→ Searah jarum jam'))+
+      '<section class="howto" aria-label="Status snake draft">'+
+        '<div class="howto-step"><span class="howto-num" style="--c-pill:#DF76A5">1</span><span>Memilih sekarang:<br><strong>'+esc(p.name)+'</strong></span></div>'+
+        '<div class="howto-step"><span class="howto-num" style="--c-pill:#EB8212">2</span><span>Sesudahnya:<br><strong>'+esc(nextLabel)+'</strong></span></div>'+
+        '<div class="howto-step"><span class="howto-num" style="--c-pill:#558B07">3</span><span>Arah Snake:<br><strong>'+(reversePass?'← Berbalik':'→ Searah')+' · Putaran '+pass+'</strong></span></div>'+
+      '</section>'+
+      '<section class="tray" aria-label="Tim '+esc(p.name)+'">'+
+        '<div class="tray-top"><h2>TIM '+esc(p.name.toUpperCase())+' <em class="num-display">'+p.team.length+' / '+state.slots+'</em></h2><span class="pill pill-yellow"><span class="num-display">'+(totalPicks-state.turn)+'</span> pick tersisa</span></div>'+
+        '<div class="slots">'+slotsHtml+'</div>'+
+        '<div class="tray-others">'+othersHtml+'</div>'+
+      '</section>'+
+      '<form id="draft">'+draftFields()+'</form>';
     announceTurn();
     return;
   }
   if(state.stage===2){
-    screen.innerHTML=heading('Roster pemain','Semua atlet dikelompokkan per pemain. Buka catatan kartu jika memakai atlet custom atau ingin menyunting pengingat.')+roster()+'<div style="margin-top:6px">'+button('Pilih atlet untuk Race 1','pick','class="primary btn-block"',true)+'</div>';
+    screen.innerHTML=heading('ROSTER PEMAIN','Semua atlet dikelompokkan per pemain. Buka catatan kartu jika memakai atlet custom atau ingin menyunting pengingat.','TIM SIAP · RACE 1')+roster()+'<div style="margin-top:6px">'+button('PILIH ATLET RACE 1!','pick','class="primary btn-block"',true)+'</div>';
     announceTurn();
     return;
   }
   if(state.stage===3){
-    screen.innerHTML=heading('Pilih atlet · Race '+state.round,'Setiap pemain memilih satu atlet yang masih tersedia untuk turun ke lintasan.')+
-      '<form id="pick" novalidate><div class="grid">'+players.map((p,i)=>pickCardMarkup(p,i)).join('')+'</div><p class="error" aria-live="polite"></p><div class="panel" style="margin-top:14px"><button class="primary btn-block">Lihat efek pre-race</button></div></form>';
+    screen.innerHTML=heading('PILIH ATLET · RACE '+state.round,'Setiap pemain memilih satu atlet yang masih tersedia untuk turun ke lintasan.','LINEUP RACE '+state.round)+
+      '<form id="pick" novalidate><div class="grid">'+players.map((p,i)=>pickCardMarkup(p,i)).join('')+'</div><p class="error" aria-live="polite"></p><div class="panel" style="margin-top:14px"><button class="primary btn-block">CEK PRE-RACE!</button></div></form>';
     announceTurn();
     return;
   }
   if(state.stage===4){screen.innerHTML=tablePre();announceTurn();return}
   if(state.stage===5){screen.innerHTML=tableRace();announceTurn();return}
   screen.innerHTML=tableResults();
+  if(lastResultsRound!==state.round){
+    lastResultsRound=state.round;
+    window.confettiBurst?.(180);
+  }
   announceTurn();
 }
 
@@ -1790,19 +1889,18 @@ function drawNames(){
 
 screen.addEventListener('input',e=>{
   if(e.target.id==='draft-search'){
-    const chips=document.querySelector('#draft-chips');
-    if(chips)chips.innerHTML=draftChipsMarkup(e.target.value);
+    const cards=document.querySelector('#draft-cards');
+    if(cards)cards.innerHTML=draftGridMarkup(e.target.value);
   }
 });
 screen.addEventListener('change',e=>{
   if(e.target.id==='count')drawNames();
-  if(e.target.id==='draft-preset')showDraftPower(e.target);
   if(e.target.name==='track'&&state.stage===4){
     const preview=document.querySelector('#prerace-track-note');
     if(preview){
       const isWild=e.target.value==='wild';
       preview.className='track-card '+(isWild?'wild':'mild');
-      preview.innerHTML='<strong>'+(isWild?'Wild Wilds':'Mild Mile')+'</strong><br><span>'+(isWild?'Bintang (+1 poin) · Batu (tersandung) · Panah (geser posisi & picu reaksi)':'Lintasan mulus 30 petak tanpa efek petak khusus.')+'</span>';
+      preview.innerHTML='<strong style="font-family:var(--font-display);font-size:18px">'+(isWild?'Wild Wilds':'Mild Mile')+'</strong><br><span>'+(isWild?'Bintang (+1 poin) · Batu (tersandung) · Panah (geser posisi & picu reaksi)':'Lintasan mulus 30 petak tanpa efek petak khusus.')+'</span>'+(isWild?'<br><small>Catatan: Wild memakai warna provisional (#F46D57), menunggu referensi foto sisi balik track fisik.</small>':'');
     }
   }
 });
@@ -1810,18 +1908,15 @@ screen.addEventListener('submit',e=>{
   e.preventDefault();const data=new FormData(e.target);
   if(e.target.id==='setup')change(()=>{state.slots=Number(data.get('slots'));state.players=Array.from({length:Number(data.get('count'))},(_,i)=>({name:data.get('p'+i).trim()||'Pemain '+(i+1),team:[],used:[]}));state.stage=1},true);
   if(e.target.id==='draft'){
-    const choice=data.get('preset');
-    const custom=choice==='custom';
-    const name=custom?data.get('athlete').trim():choice;
-    const power=custom?Object.fromEntries(rules.map(([k])=>[k,data.get(k).trim()])):racerPowers[name];
-    if(!name||!power||state.players.some(p=>p.team.some(a=>a.name.toLowerCase()===name.toLowerCase()))){screen.querySelector('.error').textContent=name?'Atlet ini sudah dipilih.':'Masukkan nama atlet.';return}
-    change(()=>{state.players[draftPlayer()].team.push({name,...power,powerSet:true});state.turn++;if(state.turn===state.slots*state.players.length)state.stage=2},true);
+    const name=String(data.get('athlete')||'').trim();
+    const power=Object.fromEntries(rules.map(([k])=>[k,String(data.get(k)||'').trim()]));
+    draftAthlete(name,power);
   }
   if(e.target.id==='pick'){
     const missing=state.players.find((_,i)=>!data.get('pick'+i));
     if(missing){
       const err=screen.querySelector('.error');
-      if(err)err.textContent='Pilih satu atlet untuk '+missing.name+' sebelum melanjutkan.';
+      if(err)err.textContent='Ups, '+missing.name+' belum pilih atlet buat turun ke start!';
       return;
     }
     change(()=>{state.players.forEach((p,i)=>{p.pick=Number(data.get('pick'+i))});state.stage=4},true);
@@ -1834,13 +1929,10 @@ screen.addEventListener('submit',e=>{
   if(e.target.id.startsWith('gm-'))change(()=>refereeForm(e.target.id,data),false);
 });
 screen.addEventListener('click',e=>{
-  const chip=e.target.closest('button[data-pick-preset]');
-  if(chip){
-    const select=document.querySelector('#draft-preset');
-    if(select){
-      select.value=chip.dataset.pickPreset;
-      showDraftPower(select);
-    }
+  const draftBtn=e.target.closest('button[data-draft-racer]');
+  if(draftBtn&&!draftBtn.disabled){
+    const name=draftBtn.dataset.draftRacer;
+    draftAthlete(name,racerPowers[name]);
     return;
   }
   const pickBtn=e.target.closest('button[data-pick-player]');
@@ -1849,7 +1941,9 @@ screen.addEventListener('click',e=>{
     const select=document.querySelector('#pick-select-'+pi);
     if(select)select.value=val;
     pickBtn.parentElement.querySelectorAll('button[data-pick-player]').forEach(btn=>{
-      btn.setAttribute('aria-pressed',String(btn===pickBtn));
+      const on=btn===pickBtn;
+      btn.setAttribute('aria-pressed',String(on));
+      btn.classList.toggle('is-picked',on);
     });
     const err=screen.querySelector('.error');
     if(err)err.textContent='';
