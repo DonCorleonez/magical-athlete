@@ -29,7 +29,7 @@ const racerPowers = {
   'Mastermind': {before:'Pada awal giliran pertama saja, tebak siapa yang akan menang. Boleh memilih diri sendiri.',finish:'Jika tebakan benar, race langsung berakhir dan Mastermind mendapat posisi kedua. Jika menebak diri sendiri dengan benar, Mastermind mendapat kedua posisi.'},
   'Party Animal': {before:'Setelah keluar dari Start, sebelum langkah utama atlet lain bergerak 1 petak mendekat. Tambah 1 pada langkah utama untuk setiap atlet lain yang kemudian berbagi petak dengan Party Animal.'},
   'Rocket Scientist': {own:'Boleh memakai dua kali angka dadu untuk jarak langkah utama. Jika dipilih, Rocket Scientist tersandung sesudah bergerak.'},
-  'Romantic': {move:'Saat ada atlet berhenti di petak dengan tepat satu atlet lain, Romantic maju 2. Jika dua atlet tiba bersama, periksa pemicu untuk masing-masing atlet.'},
+  'Romantic': {move:'Saat ada atlet berhenti di petak (selain Start) dengan tepat satu atlet lain yang sudah berada di sana, Romantic maju 2. Kedatangan serentak tidak saling memicu Romantic.'},
   'Scoocher': {move:'Scoocher maju 1 tiap kali kekuatan atlet lain terpicu. Pemicu berulang seperti reroll berulang atau beberapa petak yang dilompati dihitung satu per satu.'},
   'Sisyphus': {pre:'Ambil 4 poin sebelum race.',own:'6: Ganti gerakan itu dengan teleportasi ke Start dan kembalikan 1 poin jika masih punya poin.'},
   'Skipper': {own:'1: Skipper mendapat giliran berikutnya, termasuk saat Skipper sendiri yang melempar.',other:'1: Giliran berikutnya diberikan kepada Skipper, lalu urutan berlanjut searah jarum jam dari Skipper.'},

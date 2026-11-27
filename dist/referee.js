@@ -58,14 +58,17 @@ const referee = (() => {
     g.q=[];
   }
   function place(s,g,i){
+    const finisherPower=power(s,g,i);
     const points=medals[Math.min(s.round,4)-1];
     g.status[i]='finish';
     g.pos[i]=finishLine;
     s.placed.push(i);
     score(s,i,points[s.placed.length-1],'Finis #'+s.placed.length,true);
     if(s.placed.length===1){
-      const winner=ordered(s,g).find(j=>g.prediction[j]===i)
-        ?? (g.prediction[i]===i ? i : undefined);
+      const predictors=[...ordered(s,g),...(g.prediction[i]===i?[i]:[])]
+        .filter((j,idx,arr)=>arr.indexOf(j)===idx&&g.prediction[j]===i&&(j===i?finisherPower==='Mastermind':power(s,g,j)==='Mastermind'));
+      predictors.sort((a,b)=>(base(s,g,b)==='Mastermind')-(base(s,g,a)==='Mastermind'));
+      const winner=predictors[0];
       if(winner!==undefined){
         g.status[winner]='finish';
         g.pos[winner]=finishLine;
@@ -164,13 +167,13 @@ const referee = (() => {
   function main(s,g){
     const i=s.active,k=power(s,g,i);
     if(!live(g,i))return [task('after')];
+    if(k==='Hare'&&g.hareSkip){
+      return [ability(i,'Hare sendirian di depan · tanpa dadu'),task('after')];
+    }
     if(g.tripped[i]){
       g.tripped[i]=false;
       log(s,name(s,i)+' berdiri kembali · langkah utama dilewati');
       return [task('after')];
-    }
-    if(k==='Hare'&&g.hareSkip){
-      return [ability(i,'Hare sendirian di depan · tanpa dadu'),task('after')];
     }
     const roll=option('Lempar dadu fisik',task('guess'));
     if(k==='Legs')return [select('Legs · Pilih langkah utama',[option('Jog · maju 5 tanpa dadu',ability(i,'Legs'),task('mainMove',{i,value:5}),task('after')),roll])];
@@ -261,7 +264,7 @@ const referee = (() => {
     for(let n=t.index;n<t.riders.length;n++){
       const i=t.riders[n];
       if(!live(g,i)||g.pos[i]===0||t.dest.some(d=>d.i===i))continue;
-      const neighbors=t.dest.filter(d=>g.pos[d.i]===g.pos[i]);
+      const neighbors=t.dest.filter(d=>g.pos[d.i]===g.pos[i]&&power(s,g,d.i)!=='Huge Baby');
       if(!neighbors.length)continue;
       const next=task('ride',{...t,index:n+1});
       return [select(name(s,i)+' · Ikut atlet yang meninggalkan '+display(g.pos[i])+'?',[
@@ -275,12 +278,15 @@ const referee = (() => {
     const before=[...g.pos];
     const prior=ordered(s,g);
     const powers=Object.fromEntries(prior.map(i=>[i,power(s,g,i)]));
+    const babyRank=idx=>powers[idx]==='Huge Baby'?(base(s,g,idx)==='Huge Baby'?2:1):0;
     const candidates=t.dest.filter(d=>live(g,d.i)&&before[d.i]!==d.p);
     const moving=new Set(candidates.map(d=>d.i));
     const babyEffects=[];
     const dest=candidates.map(d=>{
-      if(d.p<=0||d.p>=finishLine||powers[d.i]==='Huge Baby')return d;
-      const baby=prior.find(j=>powers[j]==='Huge Baby'&&!moving.has(j)&&before[j]===d.p);
+      if(d.p<=0||d.p>=finishLine)return d;
+      const stationaryBaby=prior.find(j=>!moving.has(j)&&before[j]===d.p&&babyRank(j)>babyRank(d.i));
+      const coBaby=candidates.find(c=>c.i!==d.i&&c.p===d.p&&babyRank(c.i)>babyRank(d.i));
+      const baby=stationaryBaby!==undefined?stationaryBaby:coBaby?.i;
       if(baby===undefined)return d;
       babyEffects.push(ability(baby,'Huge Baby · '+name(s,d.i)+' ditempatkan 1 petak di belakang'));
       return {...d,p:d.p-1};
@@ -295,7 +301,7 @@ const referee = (() => {
       place(s,g,d.i);
       if(s.stage===6)return [];
     }
-    const board=[], impacts=[], assisted=[];
+    const board=[], impacts=[], assisted=[], chomped=new Set();
     const react=(i,...jobs)=>impacts.push({i,jobs});
     const put=(i,p,label)=>task('arrive',{dest:[{i,p}],warp:true,label});
     for(const d of dest){
@@ -310,24 +316,29 @@ const referee = (() => {
         if(powers[j]==='Banana'&&passed(j)&&!arrivals.has(j))react(j,ability(j,'Banana',task('trip',{i,label:'Banana'})));
         if(powers[i]==='Centaur'&&passed(j)&&!arrivals.has(j))react(i,ability(i,'Centaur',move(j,-2,'Centaur')));
       }
-      const stationary=prior.filter(j=>j!==i&&live(g,j)&&!arrivals.has(j)&&g.pos[j]===p);
+      const onSpace=prior.filter(j=>live(g,j)&&g.pos[j]===p);
+      const stationary=prior.filter(j=>j!==i&&live(g,j)&&!arrivals.has(j)&&g.pos[j]===p&&babyRank(j)<=babyRank(i));
       if(p>0){
-        if(powers[i]==='Huge Baby'){
-          for(const j of prior.filter(j=>j!==i&&live(g,j)&&g.pos[j]===p))react(i,ability(i,'Huge Baby',put(j,p-1,'Huge Baby')));
-        }
-        if(powers[i]==='Baba Yaga'){
-          for(const j of stationary)react(i,ability(i,'Baba Yaga',task('trip',{i:j,label:'Baba Yaga'})));
-        }
-        for(const j of stationary.filter(j=>powers[j]==='Baba Yaga'))react(j,ability(j,'Baba Yaga',task('trip',{i,label:'Baba Yaga'})));
-        if(stationary.length===1){
-          if(powers[i]==='M.O.U.T.H.')react(i,ability(i,'M.O.U.T.H.',task('eliminate',{i:stationary[0]})));
-          for(const j of owners(s,g,'Romantic'))react(j,ability(j,'Romantic',move(j,2,'Romantic')));
+        if(babyRank(i)>0){
+          for(const j of onSpace.filter(j=>j!==i&&babyRank(i)>babyRank(j)))react(i,ability(i,'Huge Baby',put(j,p-1,'Huge Baby')));
+        }else{
+          if(powers[i]==='Baba Yaga'){
+            for(const j of stationary)react(i,ability(i,'Baba Yaga',task('trip',{i:j,label:'Baba Yaga'})));
+          }
+          for(const j of stationary.filter(j=>powers[j]==='Baba Yaga'))react(j,ability(j,'Baba Yaga',task('trip',{i,label:'Baba Yaga'})));
+          if(onSpace.length===2&&stationary.length===1){
+            if(powers[i]==='M.O.U.T.H.'){
+              chomped.add(stationary[0]);
+              react(i,ability(i,'M.O.U.T.H.',task('eliminate',{i:stationary[0]})));
+            }
+            for(const j of owners(s,g,'Romantic'))react(j,ability(j,'Romantic',move(j,2,'Romantic')));
+          }
         }
       }
       assisted.push(...custom(s,i,'move',0));
       if(d.rider)assisted.push(...activate(s,g,i,'Suckerfish mengikuti'));
     }
-    const duels=owners(s,g,'Duelist').filter(i=>g.pos[i]>0&&prior.some(j=>j!==i&&live(g,j)&&g.pos[j]===g.pos[i])&&dest.some(d=>g.pos[d.i]===g.pos[i]));
+    const duels=owners(s,g,'Duelist').filter(i=>g.pos[i]>0&&!chomped.has(i)&&babyRank(i)===0&&prior.some(j=>j!==i&&live(g,j)&&babyRank(j)===0&&g.pos[j]===g.pos[i])&&dest.some(d=>g.pos[d.i]===g.pos[i]));
     for(const i of duels)react(i,task('offerDuel',{i}));
     const order=ordered(s,g);
     board.sort((a,b)=>order.indexOf(a.i)-order.indexOf(b.i));
