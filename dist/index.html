@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Race Companion</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101323;color:#f7f6ff;font:16px system-ui,sans-serif}main{max-width:790px;margin:auto;padding:24px 18px 48px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #363950;padding-bottom:16px}.brand{display:flex;align-items:center;gap:12px;font-weight:800}.mark{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#cfff65;color:#101323;font-size:28px}.muted,small{color:#c0c2d6}.steps{display:flex;flex-wrap:wrap;gap:7px;margin:24px 0}.step{border:1px solid #41445a;padding:5px 9px;border-radius:20px;font-size:14px;color:#c0c2d6}.current{background:#d9cbff;color:#151329;border-color:#d9cbff;font-weight:750}h1{font-size:clamp(34px,8vw,60px);letter-spacing:-.055em;line-height:1;margin:12px 0}h2{font-size:20px;margin:0 0 10px}p{line-height:1.5}.panel,details{background:#1d2034;border:1px solid #383c56;border-radius:18px;padding:16px;margin:12px 0}.hero{background:linear-gradient(120deg,#292442,#1d2034);padding:22px}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.spread{justify-content:space-between}.grid,.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:12px}.dice{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.dice button{padding:10px 2px;font-size:20px}.dice button[aria-pressed=true]{background:#cfff65;color:#101323}button,input,select,textarea{font:inherit;border-radius:10px}button{min-height:44px;padding:9px 13px;border:1px solid #50546e;color:inherit;background:#282d47;cursor:pointer;font-weight:700}button.primary{background:#cfff65;color:#14172a;border-color:#cfff65}button:disabled{opacity:.45;cursor:default}input,select,textarea{width:100%;background:#111526;color:inherit;border:1px solid #565a72;padding:10px;min-height:44px}label{display:block;margin:9px 0}label span{display:block;margin-bottom:5px}.effect{padding:10px 12px;margin:8px 0;border-left:3px solid #cfff65;background:#131728;border-radius:6px;white-space:pre-wrap}.actions{margin-top:14px}.tag{color:#d9cbff;font-weight:750}summary{cursor:pointer;font-weight:700}ol{padding-left:24px}li{margin:6px 0}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #d9cbff;outline-offset:2px}form{margin:0}.error{color:#ffb5b5}
+.race-head p{margin:4px 0 12px}.action-panel{border-color:#768c57}.action-panel .tag{margin-top:0}.board-table{overflow:auto}.board-table table{width:100%;border-collapse:collapse;text-align:left}.board-table th,.board-table td{padding:11px 8px;border-bottom:1px solid #41445a}.board-table small{display:block}.active-row{background:#303a3d}.board-table progress{display:block;width:min(100%,105px);height:6px;margin-top:5px;accent-color:#cfff65}.actions button{touch-action:manipulation}button,input,select{touch-action:manipulation}
+</style>
+<main><header><div class="brand"><span class="mark" aria-hidden="true">⚄</span><div>Race Companion<br><small>Untuk Magical Athlete</small></div></div><button id="undo">Undo</button></header><nav class="steps" aria-label="Tahap permainan"></nav><section id="screen"></section><details id="catalog"><summary>Daftar atlet dan kekuatan</summary><p class="muted">Magical Athlete · CMYK 2025</p><label><span>Cari nama atlet</span><input type="search" id="catalog-search" placeholder="Contoh: Alchemist"></label><div id="catalog-results"></div><p><a style="color:#d9cbff" href="https://www.rulespal.com/magical-athlete/rulebook#racer-info" target="_blank" rel="noopener">Rulebook</a> · <a style="color:#d9cbff" href="https://iello.fr/athletes-de-compete-tatillon-repond-a-vos-questions/" target="_blank" rel="noopener">FAQ dan klarifikasi aturan</a></p></details></main>
+<script src="powers.js"></script>
+<script src="referee.js"></script>
+<script src="table.js"></script>
+<script>
+const key='race-companion-v1', screen=document.querySelector('#screen'), nav=document.querySelector('nav');
+const stages=['Pemain','Snake draft','Roster','Pilih atlet','Pre-race','Race','Hasil'];
+const initial=()=>({stage:0, players:[], slots:4, turn:0, round:1, active:0, log:[], placed:[], die:0});
+let saved;
+try{saved=JSON.parse(localStorage.getItem(key))}catch{}
+let state=saved?.state||initial(), history=saved?.history||[];
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const persist=()=>{try{localStorage.setItem(key,JSON.stringify({state,history}))}catch{}};
+function change(fn, scroll=false){history.push(structuredClone(state));if(history.length>40)history.shift();fn();persist();render();if(scroll)window.scrollTo(0,0)}
+const button=(label,action,extra='',primary=false)=>'<button type="button" data-action="'+action+'" '+extra+(primary?' class="primary"':'')+'>'+label+'</button>';
+const heading=(title,sub)=>'<div class="panel hero"><h1>'+title+'</h1><p class="muted">'+sub+'</p></div>';
+const field=(label,content)=>'<label><span>'+label+'</span>'+content+'</label>';
+const numopts=(lo,hi,v)=>Array.from({length:hi-lo+1},(_,i)=>'<option '+(i+lo===v?'selected':'')+'>'+(i+lo)+'</option>').join('');
+const draftPlayer=()=>{const n=state.players.length, pass=Math.floor(state.turn/n), i=state.turn%n;return (Math.floor(pass/2)+(pass%2?n-i-1:i))%n};
+const athlete=p=>p.team[p.pick];
+const rules=[['pre','Sebelum race'],['before','Awal giliran sendiri'],['own','Dadu sendiri'],['other','Dadu lawan'],['move','Saat bergerak / kondisi papan'],['finish','Saat finis / akhir race']];
+const racerNames=Object.keys(racerPowers).sort((a,b)=>a.localeCompare(b));
+const normalize=name=>name.trim().toLowerCase();
+const presetName=name=>racerNames.find(racer=>normalize(racer)===normalize(name));
+function catalog(){
+  const query=normalize(document.querySelector('#catalog-search').value);
+  document.querySelector('#catalog-results').innerHTML=racerNames.filter(name=>normalize(name).includes(query))
+    .map(name=>'<details><summary>'+esc(name)+'</summary>'+powerSummary(racerPowers[name])+'</details>').join('')
+    ||'<p>Tidak ada nama yang cocok.</p>';
+}
+function powerSummary(power){
+  return rules.filter(([k])=>power?.[k]).map(([k,label])=>'<div class="effect"><strong>'+label+'</strong><br>'+esc(power[k])+'</div>').join('');
+}
+function availableRacers(){
+  const drafted=new Set(state.players.flatMap(p=>p.team.map(a=>normalize(a.name))));
+  return racerNames.filter(name=>!drafted.has(normalize(name)));
+}
+function draftFields(){
+  return field('Pilih atlet','<select id="draft-preset" name="preset" required><option value="">Pilih dari daftar</option>'+
+    availableRacers().map(name=>'<option>'+esc(name)+'</option>').join('')+
+    '<option value="custom">Tambah atlet sendiri</option></select>')+
+    '<div id="draft-custom" hidden>'+field('Nama atlet','<input name="athlete" maxlength="80" placeholder="Nama pada kartu">')+ruleEditor()+'</div>'+
+    '<div id="draft-power" aria-live="polite"></div>';
+}
+function showDraftPower(select){
+  const custom=select.value==='custom';
+  const form=select.form;
+  document.querySelector('#draft-custom').hidden=!custom;
+  form.elements.athlete.required=custom;
+  document.querySelector('#draft-power').innerHTML=powerSummary(racerPowers[select.value]);
+}
+function restorePresets(snapshot){
+  snapshot.players.forEach(player=>player.team.forEach(a=>{
+    if(a.powerSet || rules.some(([k])=>a[k]))return;
+    const preset=presetName(a.name);
+    if(preset)Object.assign(a,racerPowers[preset],{powerSet:true});
+  }));
+}
+restorePresets(state);
+history.forEach(restorePresets);
+document.querySelector('#catalog-search').addEventListener('input',catalog);
+catalog();
+function ruleEditor(){return '<details><summary>Masukkan kemampuan dari kartu</summary><p class="muted">Pisahkan efek dengan baris baru. Untuk efek dadu tertentu, awali dengan angka dan titik dua, misalnya “1,6: Cek posisi sebelum bergerak”. Tanpa angka, efek ditampilkan untuk semua hasil dadu.</p>'+rules.map(([key,label])=>field(label,'<textarea rows="2" name="'+key+'"></textarea>')).join('')+'</details>'}
+function roster(readonly=false){return '<div class="grid">'+state.players.map((p,i)=>'<section class="panel"><h2>'+esc(p.name)+'</h2>'+p.team.map((a,j)=>'<details><summary>'+esc(a.name)+(p.used.includes(j)?' · Sudah race':'')+'</summary>'+(readonly?rules.map(([k,l])=>a[k]?'<div class="effect"><strong>'+l+'</strong><br>'+esc(a[k])+'</div>':'').join('')||'<p>Belum ada kemampuan yang dicatat.</p>':rules.map(([k,label])=>field(label,'<textarea rows="2" data-player="'+i+'" data-athlete="'+j+'" data-rule="'+k+'">'+esc(a[k])+'</textarea>')).join('')+button('Simpan kemampuan','save-rules','data-player="'+i+'" data-athlete="'+j+'"'))+'</details>').join('')+'</section>').join('')+'</div>'}
+function render(){
+document.querySelector('#undo').disabled=!history.length;
+nav.innerHTML=stages.map((s,i)=>'<span class="step '+(i===state.stage?'current':'')+'" '+(i===state.stage?'aria-current="step"':'')+'>'+s+'</span>').join('');
+const players=state.players;
+if(state.stage===0){
+screen.innerHTML=heading('Siap balapan?','Catat roster, hasil dadu, dan efek kartu selama main di meja.')+'<form id="setup" class="panel"><div class="grid">'+field('Jumlah pemain','<select id="count" name="count">'+numopts(2,6,4)+'</select>')+field('Atlet per pemain','<select name="slots" id="slots">'+numopts(1,6,4)+'</select>')+'</div><p class="muted">Isi nama searah jarum jam, mulai dari pemain yang draft pertama. Mode ini memakai satu atlet per pemain per race.</p><div id="names" class="names"></div><p><button class="primary">Mulai snake draft</button></p></form>';drawNames();return}
+if(state.stage===1){
+let p=players[draftPlayer()];
+screen.innerHTML=heading('Snake draft','Pick '+(state.turn+1)+' dari '+players.length*state.slots+' · Putaran draft '+(Math.floor(state.turn/players.length)+1))+'<form class="panel" id="draft"><h2>Giliran '+esc(p.name)+'</h2>'+draftFields()+'<p class="error" aria-live="polite"></p><button class="primary">Simpan pick</button></form><div class="grid">'+players.map(p=>'<div class="panel"><strong>'+esc(p.name)+'</strong><p class="muted">'+(p.team.map(a=>esc(a.name)).join(' · ')||'Belum memilih')+'</p></div>').join('')+'</div>';return}
+if(state.stage===2){screen.innerHTML=heading('Roster pemain','Buka nama atlet untuk meninjau atau menambahkan kemampuan kartunya.')+roster()+button('Pilih atlet untuk Race 1','pick','',true);return}
+if(state.stage===3){
+screen.innerHTML=heading('Pilih atlet','Race '+state.round+' · Setiap pemain memilih satu atlet yang masih tersedia.')+'<form class="panel" id="pick"><div class="names">'+players.map((p,i)=>field(esc(p.name),'<select name="pick'+i+'" required><option value="">Pilih atlet</option>'+p.team.map((a,j)=>p.used.includes(j)?'':'<option value="'+j+'">'+esc(a.name)+'</option>').join('')+'</select>')).join('')+'</div><p><button class="primary">Lihat efek pre-race</button></p></form>';return}
+if(state.stage===4){screen.innerHTML=tablePre();return}
+if(state.stage===5){screen.innerHTML=tableRace();return}
+screen.innerHTML=tableResults();
+}
+function drawNames(){
+const box=document.querySelector('#names'),count=Number(document.querySelector('#count').value), prev=[...box.querySelectorAll('input')].map(n=>n.value);
+box.innerHTML=Array.from({length:count},(_,i)=>field('Pemain '+(i+1),'<input name="p'+i+'" maxlength="40" placeholder="Pemain '+(i+1)+'" value="'+esc(prev[i])+'">')).join('');
+}
+screen.addEventListener('change',e=>{if(e.target.id==='count')drawNames();if(e.target.id==='draft-preset')showDraftPower(e.target)});
+screen.addEventListener('submit',e=>{
+e.preventDefault();const data=new FormData(e.target);
+if(e.target.id==='setup')change(()=>{state.slots=Number(data.get('slots'));state.players=Array.from({length:Number(data.get('count'))},(_,i)=>({name:data.get('p'+i).trim()||'Pemain '+(i+1),team:[],used:[]}));state.stage=1},true);
+if(e.target.id==='draft'){
+const choice=data.get('preset');
+const custom=choice==='custom';
+const name=custom?data.get('athlete').trim():choice;
+const power=custom?Object.fromEntries(rules.map(([k])=>[k,data.get(k).trim()])):racerPowers[name];
+if(!name||!power||state.players.some(p=>p.team.some(a=>a.name.toLowerCase()===name.toLowerCase()))){screen.querySelector('.error').textContent=name?'Atlet ini sudah dipilih.':'Masukkan nama atlet.';return}
+change(()=>{state.players[draftPlayer()].team.push({name,...power,powerSet:true});state.turn++;if(state.turn===state.slots*state.players.length)state.stage=2},true);
+}
+if(e.target.id==='pick')change(()=>{state.players.forEach((p,i)=>{p.pick=Number(data.get('pick'+i))});state.stage=4},true);
+if(e.target.id==='start')change(()=>{
+  state.track=data.get('track');
+  state.stage=5;
+  referee.start(state,Number(data.get('first')));
+},true);
+if(e.target.id.startsWith('gm-'))change(()=>refereeForm(e.target.id,data),true);
+});
+screen.addEventListener('click',e=>{
+const b=e.target.closest('button[data-action]');if(!b)return;
+const action=b.dataset.action,index=Number(b.dataset.index);
+if(action==='reset'&&!confirm('Mulai permainan baru?'))return;
+change(()=>{
+switch(action){
+case 'save-rules': {
+const {player,athlete}=b.dataset;
+b.parentElement.querySelectorAll('textarea').forEach(t=>{state.players[player].team[athlete][t.dataset.rule]=t.value.trim();state.players[player].team[athlete].powerSet=true});break;
+}
+case 'pick':state.stage=3;break;
+case 'gm-choice':referee.take(state,'choice',index);break;
+case 'gm-roll':referee.take(state,'roll',index);break;
+case 'gm-confirm':referee.take(state,'confirmMove');break;
+case 'gm-notice':referee.take(state,'notice');break;
+case 'gm-no-egg':referee.take(state,'egg');break;
+case 'gm-resume':referee.resume(state);break;
+case 'round':state.players.forEach(p=>p.used.push(p.pick));state.round++;delete state.track;delete state.gm;state.placed=[];state.log=[];state.die=0;state.stage=3;break;
+case 'reset':state=initial();break;
+}
+},action.startsWith('gm-')||['pick','round','reset'].includes(action));
+});
+document.querySelector('#undo').addEventListener('click',()=>{if(history.length){state=history.pop();persist();render();window.scrollTo(0,0)}});
+render();
+</script>
+</html>
