@@ -1,3 +1,5 @@
+const TRACK_SPACE_COLORS=['#DF76A5','#FED42C','#558B07','#599CCF','#E94107','#EB8212','#8D55CE','#20A1BF'];
+
 function trackLabel(track){return track==='wild'?'Wild Wilds':'Mild Mile'}
 function trackSelect(){
   return ['mild','wild'].map(track=>'<option value="'+track+'" '+(track===referee.config(state)?'selected':'')+'>'+trackLabel(track)+'</option>').join('');
@@ -18,11 +20,12 @@ function dieSvg(n){
 }
 
 function medalSvg(rank){
-  const fill=rank===1?'#202023':'#18635A';
-  return '<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none">'+
-    '<circle cx="12" cy="10" r="7" fill="'+fill+'"/>'+
-    '<path d="M8 16l-2 6 6-2 6 2-2-6" stroke="'+fill+'" stroke-width="2" fill="none"/>'+
-    '<text x="12" y="13.5" text-anchor="middle" fill="#FFF5DE" font-size="10" font-weight="800" font-family="sans-serif">'+rank+'</text>'+
+  const fill=rank===1?'#180A03':rank===2?'#FFFFFF':'#180A03';
+  const textFill=rank===1?'#FED42C':rank===2?'#8D55CE':'#FCFBED';
+  return '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none">'+
+    '<circle cx="12" cy="10" r="7.5" fill="'+fill+'"/>'+
+    '<path d="M8 16l-2 6 6-2 6 2-2-6" stroke="'+fill+'" stroke-width="2.2" fill="none"/>'+
+    '<text x="12" y="13.5" text-anchor="middle" fill="'+textFill+'" font-size="10" font-weight="800" font-family="Titan One, Arial Black, sans-serif">'+rank+'</text>'+
     '</svg>';
 }
 
@@ -35,36 +38,40 @@ function tablePre(){
   const firstIdx=state.nextStarter??0;
   const order=state.players.map((_,k)=>(firstIdx+k)%state.players.length);
   const preNotes=order.filter(i=>athlete(state.players[i]).pre);
+  const raceColors=raceTokenColors(state.players);
 
-  return heading('Siapkan Race '+state.round,suggestion,'Pre-race · '+trackLabel(track))+
+  return heading('SIAPKAN RACE '+state.round,suggestion,'PRE-RACE · '+trackLabel(track).toUpperCase())+
     '<form class="panel" id="start">'+
       '<div class="grid-2">'+
         field('Lintasan','<select name="track">'+trackSelect()+'</select>')+
         field('Pemain pertama','<select name="first">'+state.players.map((p,i)=>'<option value="'+i+'" '+(i===state.nextStarter?'selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>')+
       '</div>'+
+      '<p class="muted" style="margin:6px 0 8px">Wild: warna provisional, menunggu referensi track fisik. Mild Mile memakai teal DNA (#20A1BF).</p>'+
       '<div id="prerace-track-note" class="track-card '+(track==='wild'?'wild':'mild')+'">'+
-        '<strong>'+trackLabel(track)+'</strong><br>'+
+        '<strong style="font-family:var(--font-display);font-size:18px">'+trackLabel(track)+'</strong><br>'+
         '<span>'+(track==='wild'
           ?'Bintang (+1 poin) · Batu (tersandung) · Panah (geser posisi & picu reaksi)'
           :'Lintasan mulus 30 petak tanpa efek petak khusus.')+'</span>'+
+        (track==='wild'?'<br><small>Catatan: Wild memakai warna provisional (#F46D57), menunggu referensi foto sisi balik track fisik.</small>':'')+
       '</div>'+
       '<div class="row" style="margin:10px 0 14px">'+
-        '<span class="pill pill-yellow">Finis #1 · +'+awards[0]+' poin</span>'+
-        '<span class="pill pill-teal">Finis #2 · +'+awards[1]+' poin</span>'+
+        '<span class="pill pill-teal">Finis #1 · <span class="num-display">+'+awards[0]+'</span> poin</span>'+
+        '<span class="pill pill-purple">Finis #2 · <span class="num-display">+'+awards[1]+'</span> poin</span>'+
       '</div>'+
-      (preNotes.length?'<div class="track-card" style="background:var(--yellow-soft)"><strong>Perlu tindakan sebelum race:</strong> '+preNotes.map(i=>esc(athlete(state.players[i]).name)+' ('+esc(state.players[i].name)+')').join(', ')+'</div>':'')+
-      '<h2 style="margin-top:12px">Lineup di Start</h2>'+
+      (preNotes.length?'<div class="track-card" style="background:var(--color-secondary)"><strong>Perlu tindakan sebelum race:</strong> '+preNotes.map(i=>esc(athlete(state.players[i]).name)+' ('+esc(state.players[i].name)+')').join(', ')+'</div>':'')+
+      '<h2 style="margin-top:14px">Lineup di Start</h2>'+
       '<div class="grid">'+order.map((i,pos)=>{
-        const p=state.players[i], a=athlete(p);
+        const p=state.players[i], a=athlete(p), c=raceColors[i];
         const eff=rules.filter(([k])=>a[k]).map(([k,l])=>l+': '+a[k]).join(' · ');
         return '<div class="lineup-item">'+
-          '<div class="row spread"><strong>'+esc(a.name)+'</strong><span class="pill pill-muted">Urutan #'+(pos+1)+'</span></div>'+
+          '<div class="racer-mini-band" style="background:'+c+'"></div>'+
+          '<div class="row spread"><span class="row" style="gap:8px"><span class="racer-init-chip" style="background:'+c+';color:'+racerFg(c)+'" aria-hidden="true">'+esc((a.name||'?')[0])+'</span><strong style="font-family:var(--font-display);font-size:17px">'+esc(a.name)+'</strong></span><span class="pill pill-muted">Urutan <span class="num-display">#'+(pos+1)+'</span></span></div>'+
           '<span class="muted">Pemain: '+esc(p.name)+'</span>'+
-          (a.pre?'<span class="pill pill-coral" style="align-self:flex-start">Pre-race: '+esc(a.pre)+'</span>':'')+
+          (a.pre?'<span class="pill pill-orange" style="align-self:flex-start">Pre-race: '+esc(a.pre)+'</span>':'')+
           (eff&&!a.pre?'<small>'+esc(eff)+'</small>':'')+
         '</div>';
       }).join('')+'</div>'+
-      '<p style="margin-top:14px"><button class="primary btn-block">Siapkan papan dan mulai</button></p>'+
+      '<p style="margin-top:16px"><button class="primary btn-block">RACE!</button></p>'+
     '</form>';
 }
 
@@ -125,7 +132,7 @@ function renderChoiceTask(t,g){
     return '<h2 id="task-focus" tabindex="-1">'+esc(t.title)+'</h2>'+
       '<div class="task-context">'+
         '<span class="pill pill-yellow">Pemilik: '+esc(ownerName)+' ('+esc(riderName)+')</span>'+
-        (followedNames.length?'<span class="pill pill-coral">◆ Ikuti: '+esc(followedNames.join(', '))+'</span>':'')+
+        (followedNames.length?'<span class="pill pill-pink">◆ Ikuti: '+esc(followedNames.join(', '))+'</span>':'')+
         (originPos&&destPos?'<span class="pill">Jalur: '+esc(originPos)+' → '+esc(destPos)+'</span>':'')+
       '</div>'+
       '<p class="muted">Pilih apakah Suckerfish ikut pindah atau tetap di petak sekarang.</p>'+
@@ -147,7 +154,7 @@ function renderChoiceTask(t,g){
           const targetPlayer=sub&&sub.j!==undefined?'Pemilik: '+state.players[sub.j].name:'';
           return button('<span>'+esc(c.label)+(targetPlayer?' <small style="font-weight:700">('+esc(targetPlayer)+')</small>':'')+'</span>','gm-choice','data-index="'+i+'" class="btn-block"',true);
         }).join('')+
-        (rollIdx>=0?'<hr style="border:0;border-top:2px dashed var(--paper-alt);margin:4px 0">'+button(esc(choices[rollIdx].label),'gm-choice','data-index="'+rollIdx+'" class="btn-block"',false):'')+
+        (rollIdx>=0?'<hr style="border:0;border-top:2px dashed var(--color-ink);margin:4px 0">'+button(esc(choices[rollIdx].label),'gm-choice','data-index="'+rollIdx+'" class="btn-block"',false):'')+
       '</div>';
   }
 
@@ -160,10 +167,10 @@ function renderChoiceTask(t,g){
     });
     return '<h2 id="task-focus" tabindex="-1">'+esc(t.title)+'</h2>'+
       '<div class="task-context">'+
-        '<span class="pill pill-yellow">Hasil dadu saat ini: '+g.die+'</span>'+
+        '<span class="pill pill-yellow"><span class="die-roll-anim">'+dieSvg(g.die)+'</span> Dadu: <span class="num-display">'+g.die+'</span></span>'+
         sources.map(s=>'<span class="pill pill-teal">Sumber: '+esc(s)+'</span>').join('')+
       '</div>'+
-      '<p class="muted">Tetap pakai angka '+g.die+' untuk langkah utama, atau lakukan lempar ulang fisik.</p>'+
+      '<p class="muted">Tetap pakai angka <strong class="num-display">'+g.die+'</strong> untuk langkah utama, atau lakukan lempar ulang fisik.</p>'+
       '<div class="choice-stack">'+choices.map((c,i)=>{
         const keep=c.tasks?.[0]?.type==='finalRoll';
         return button(esc(c.label),'gm-choice','data-index="'+i+'" class="btn-block"',keep);
@@ -195,7 +202,7 @@ function tableTask(t){
     return '<h2 id="task-focus" tabindex="-1">Masukkan hasil dadu fisik</h2>'+
       '<div class="task-context">'+
         '<span class="pill pill-yellow">'+esc(label)+' ('+esc(state.players[state.active].name)+')</span>'+
-        (rerollCount?'<span class="pill pill-coral">Lempar ulang aktif</span>':'')+
+        (rerollCount?'<span class="pill pill-orange">Lempar ulang aktif</span>':'')+
       '</div>'+
       '<p class="muted">Lempar dadu di meja lalu ketuk angka hasilnya (1–6).</p>'+
       '<div class="dice">'+Array.from({length:6},(_,i)=>{
@@ -207,24 +214,25 @@ function tableTask(t){
     const direction=t.total<0?'Mundur':t.total>0?'Maju':'Tetap di petak ini';
     const startPos=g.pos[t.i];
     const parts=String(t.reason||'').split(/\s+(?=[+-])/);
-    return '<h2 id="task-focus" tabindex="-1">'+direction+(t.total?' '+Math.abs(t.total)+' petak':'')+'</h2>'+
+    return '<h2 id="task-focus" tabindex="-1">'+direction+(t.total?' <span class="num-display">'+Math.abs(t.total)+'</span> petak':'')+'</h2>'+
       '<div class="math-strip">'+
+        (g.die?'<span class="pill pill-white"><span class="die-roll-anim">'+dieSvg(g.die)+'</span> <span class="num-display">'+g.die+'</span></span>':'')+
         '<span class="pill pill-yellow">Dari '+esc(referee.display(startPos))+'</span>'+
         parts.map(p=>'<span class="pill">'+esc(p)+'</span>').join('')+
         '<span class="pill pill-teal">= '+esc(direction+(t.total?' '+Math.abs(t.total):''))+'</span>'+
       '</div>'+
       '<p class="muted">Setelah dikonfirmasi, geser pion fisik '+esc(referee.name(state,t.i))+' sesuai hasil akhir di papan.</p>'+
-      button('Lanjutkan langkah utama','gm-confirm','class="primary btn-block"',true);
+      button('LANJUTKAN!','gm-confirm','class="primary btn-block"',true);
   }
   if(t.type==='egg'){
     const avail=availableRacers();
     return '<h2 id="task-focus" tabindex="-1">'+esc(referee.name(state,t.i))+' · Salin kekuatan</h2>'+
-      '<div class="task-context"><span class="pill pill-yellow">Pemilik: '+esc(state.players[t.i].name)+'</span><span class="pill">Efek berlaku sepanjang race</span></div>'+
+      '<div class="task-context"><span class="pill pill-yellow">Pemilik: '+esc(state.players[t.i].name)+'</span><span class="pill pill-blue">Efek berlaku sepanjang race</span></div>'+
       '<p class="muted">Ambil 3 kartu atlet fisik dari kotak, pilih 1, lalu pilih nama kartu yang sama di bawah.</p>'+
       '<form id="gm-egg">'+
         field('Kartu yang dipilih','<select name="copy" required><option value="">Pilih atlet</option>'+avail.map(n=>'<option>'+esc(n)+'</option>').join('')+'</select>')+
         '<div class="row" style="margin-top:12px">'+
-          '<button class="primary" style="flex:1">Pakai kekuatan</button>'+
+          '<button class="primary" style="flex:1">PAKAI KEKUATAN!</button>'+
           button('Tidak ada kartu tersisa','gm-no-egg')+
         '</div>'+
       '</form>';
@@ -237,17 +245,17 @@ function tableTask(t){
       return '<label class="duel-radio"><input type="radio" name="'+fieldName+'" value="'+n+'"'+(n===def?' checked':'')+'><span>'+n+'</span></label>';
     }).join('')+'</div>';
     return '<h2 id="task-focus" tabindex="-1">Duel Dadu · '+esc(nameA)+' vs '+esc(nameB)+'</h2>'+
-      '<div class="task-context"><span class="pill pill-coral">Pemenang maju 2 petak</span><span class="pill">Seri = '+esc(nameA)+' menang</span></div>'+
+      '<div class="task-context"><span class="pill pill-orange">Pemenang maju 2 petak</span><span class="pill">Seri = '+esc(nameA)+' menang</span></div>'+
       '<p class="muted">Masukkan dadu duel masing-masing peserta (terpisah dari dadu langkah utama).</p>'+
       '<form id="gm-duel">'+
         '<div class="duel-pair">'+
           '<div class="duel-box"><strong>Dadu '+esc(nameA)+'</strong> <small>('+esc(ownerA)+')</small>'+radioStrip('a',1)+'</div>'+
           '<div class="duel-box"><strong>Dadu '+esc(nameB)+'</strong> <small>('+esc(ownerB)+')</small>'+radioStrip('b',1)+'</div>'+
         '</div>'+
-        '<button class="primary btn-block">Selesaikan duel</button>'+
+        '<button class="primary btn-block">SELESAIKAN DUEL!</button>'+
       '</form>';
   }
-  return '<h2 id="task-focus" tabindex="-1">'+esc(t.title||label)+'</h2><p>'+esc(t.body)+'</p>'+button('Lanjutkan','gm-notice','class="primary btn-block"',true);
+  return '<h2 id="task-focus" tabindex="-1">'+esc(t.title||label)+'</h2><p>'+esc(t.body)+'</p>'+button('LANJUTKAN!','gm-notice','class="primary btn-block"',true);
 }
 
 function formatRecentEvents(log){
@@ -269,7 +277,7 @@ function formatRecentEvents(log){
   return items.slice(-3).reverse();
 }
 
-function renderTrackBoard(g,t){
+function renderTrackBoard(g,t,raceColors){
   const track=referee.config(state);
   const active=state.active;
   const targets=targetContextForTask(t,g);
@@ -287,23 +295,25 @@ function renderTrackBoard(g,t){
     const isTarget=targets.spaces.has(p);
     let cls='space-cell';
     let fx='';
-    if(p===0)cls+=' is-start';
-    else if(p===referee.finishLine)cls+=' is-finish';
-    else if(tile==='star'){cls+=' is-star';fx='★+1'}
-    else if(tile==='trip'){cls+=' is-trip';fx='▲'}
-    else if(typeof tile==='number'){cls+=' is-arrow';fx=(tile>0?'+':'')+tile}
+    let bandColor=TRACK_SPACE_COLORS[(Math.max(0,p-1))%TRACK_SPACE_COLORS.length];
+    if(p===0){cls+=' is-start';bandColor='#20A1BF';}
+    else if(p===referee.finishLine){cls+=' is-finish';}
+    else if(tile==='star'){cls+=' is-star';fx='★+1';bandColor='#FED42C';}
+    else if(tile==='trip'){cls+=' is-trip';fx='▲';bandColor='#E94107';}
+    else if(typeof tile==='number'){cls+=' is-arrow';fx=(tile>0?'+':'')+tile;bandColor=tile>0?'#558B07':'#8D55CE';}
     if(hasActive)cls+=' is-active';
     if(isTarget)cls+=' is-target';
 
     const shownTokens=occupants.slice(0,3).map(i=>{
       const rName=referee.name(state,i);
       const code=rName.replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase()||String(i+1);
+      const rc=raceColors[i];
       const tCls='pawn'+(i===active?' is-active':g.tripped[i]?' is-tripped':targets.racers.has(i)?' is-target':'');
-      return '<span class="'+tCls+'" title="'+esc(rName+' ('+state.players[i].name+')')+'">'+esc(code)+'</span>';
+      return '<span class="'+tCls+'" style="--pawn-c:'+rc+';--pawn-fg:'+racerFg(rc)+'" title="'+esc(rName+' ('+state.players[i].name+')')+'">'+esc(code)+'</span>';
     }).join('');
     const stackBadge=occupants.length>1?'<span class="pawn-stack-count">'+occupants.length+'×</span>':'';
     const label=p===0?'S':p===referee.finishLine?'F':String(p);
-    return '<div class="'+cls+'"><div class="space-head"><span>'+label+'</span>'+(fx?'<span class="space-fx">'+fx+'</span>':'')+(isTarget?'<span aria-hidden="true">◆</span>':'')+'</div><div class="space-tokens">'+shownTokens+stackBadge+'</div></div>';
+    return '<div class="'+cls+'" style="--space-c:'+bandColor+'"><div class="space-band"></div><div class="space-inner"><div class="space-head"><span>'+label+'</span>'+(fx?'<span class="space-fx">'+fx+'</span>':'')+(isTarget?'<span aria-hidden="true">◆</span>':'')+'</div><div class="space-tokens">'+shownTokens+stackBadge+'</div></div></div>';
   }).join('');
 
   return '<div class="track-grid" aria-label="Peta petak lintasan 0 sampai '+referee.finishLine+'">'+cells+'</div>';
@@ -318,7 +328,7 @@ function leaderboard(){
   sorted.map(({p,score},idx)=>{
     if(score!==prevScore){rank=idx+1;prevScore=score}
     const tied=counts[score]>1;
-    return '<tr><td><strong>#'+rank+'</strong>'+(tied?' <span class="pill pill-yellow" style="min-height:24px;padding:1px 7px">Seri</span>':'')+'</td><td><strong>'+esc(p.name)+'</strong></td><td style="text-align:right"><strong>'+score+'</strong></td></tr>';
+    return '<tr><td><strong class="num-display">#'+rank+'</strong>'+(tied?' <span class="pill pill-yellow" style="min-height:24px;padding:1px 7px">Seri</span>':'')+'</td><td><strong>'+esc(p.name)+'</strong></td><td style="text-align:right"><strong class="num-display" style="font-size:18px">'+score+'</strong></td></tr>';
   }).join('')+'</tbody></table></div>';
 }
 
@@ -337,8 +347,8 @@ function syncForm(){
 
 function tableRace(){
   const g=state.gm;
-  if(!g)return heading('Lanjutkan Race '+state.round,'Sinkronkan posisi dengan papan fisik untuk memakai pemandu race.')+
-    '<div class="panel">'+button('Buka pemandu race','gm-resume','class="primary btn-block"',true)+'</div>';
+  if(!g)return heading('LANJUTKAN RACE '+state.round,'Sinkronkan posisi dengan papan fisik untuk memakai pemandu race.')+
+    '<div class="panel">'+button('BUKA PEMANDU RACE!','gm-resume','class="primary btn-block"',true)+'</div>';
 
   const t=g.q[0];
   const active=state.active;
@@ -349,6 +359,8 @@ function tableRace(){
   const activeOriginal=referee.name(state,active);
   const activePower=referee.power(state,g,active);
   const targets=targetContextForTask(t,g);
+  const raceColors=raceTokenColors(state.players);
+  const activeColor=raceColors[active];
   const profile=track==='wild'
     ?'★ Bintang +1 poin · ▲ Batu tersandung · Panah geser & picu reaksi · Start bebas efek berbagi petak'
     :'Lintasan standar tanpa efek petak · Start bebas efek berbagi petak';
@@ -365,32 +377,33 @@ function tableRace(){
     const place=state.placed.indexOf(i);
     const original=referee.name(state,i);
     const power=referee.power(state,g,i);
+    const rc=raceColors[i];
     const isActive=i===active&&g.status[i]==='race';
     const isTarget=targets.racers.has(i);
     const isOut=g.status[i]==='out';
     const pct=Math.max(0,Math.min(100,Math.round((pos/referee.finishLine)*100)));
-    let statusBadge='<span class="pill pill-teal" style="min-height:24px;padding:1px 8px">Aktif</span>';
-    if(place>=0)statusBadge='<span class="pill pill-yellow" style="min-height:24px;padding:1px 8px">Finis #'+(place+1)+'</span>';
+    let statusBadge='<span class="pill pill-blue" style="min-height:24px;padding:1px 8px">Aktif</span>';
+    if(place>=0)statusBadge='<span class="pill pill-green" style="min-height:24px;padding:1px 8px">Finis <span class="num-display">#'+(place+1)+'</span></span>';
     else if(isOut)statusBadge='<span class="pill pill-muted" style="min-height:24px;padding:1px 8px">Eliminasi</span>';
-    else if(g.tripped[i])statusBadge='<span class="pill pill-coral-solid" style="min-height:24px;padding:1px 8px">Tersandung</span>';
+    else if(g.tripped[i])statusBadge='<span class="pill pill-error" style="min-height:24px;padding:1px 8px">Tersandung</span>';
 
     const rowCls='racer-row'+(isActive?' active-row':'')+(isTarget?' target-row':'')+(isOut?' out-row':'');
     return '<div class="'+rowCls+'">'+
       '<div>'+
-        '<div class="racer-row-name">'+esc(original)+'</div>'+
+        '<div class="racer-row-name"><span class="racer-dot" style="background:'+rc+'" aria-hidden="true"></span><span>'+esc(original)+'</span></div>'+
         '<div class="racer-row-meta">'+
           '<span class="muted">'+esc(state.players[i].name)+'</span>'+
           (power!==original?'<span class="pill" style="min-height:24px;padding:1px 8px">Menyalin: '+esc(power)+'</span>':'')+
           (isActive?'<span class="pill pill-ink" style="min-height:24px;padding:1px 8px">Giliran aktif</span>':statusBadge)+
-          (isActive&&g.tripped[i]?'<span class="pill pill-coral-solid" style="min-height:24px;padding:1px 8px">Tersandung</span>':'')+
-          (isTarget?'<span class="pill pill-coral" style="min-height:24px;padding:1px 8px">◆ Target</span>':'')+
+          (isActive&&g.tripped[i]?'<span class="pill pill-error" style="min-height:24px;padding:1px 8px">Tersandung</span>':'')+
+          (isTarget?'<span class="pill pill-pink" style="min-height:24px;padding:1px 8px">◆ Target</span>':'')+
         '</div>'+
       '</div>'+
       '<div class="racer-row-score">'+
         '<span class="racer-pos-num">'+(isOut?'Keluar':referee.display(pos))+'</span>'+
         '<span class="racer-pts">'+state.scores[i]+' poin</span>'+
       '</div>'+
-      '<div class="track-meter" aria-hidden="true"><div class="track-meter-fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="track-meter" aria-hidden="true"><div class="track-meter-fill" style="width:'+pct+'%;background:'+rc+'"></div></div>'+
     '</div>';
   }).join('');
 
@@ -398,17 +411,17 @@ function tableRace(){
     '<div class="race-col">'+
       '<header class="race-head '+(track==='wild'?'wild':'mild')+'">'+
         '<div class="race-head-top">'+
-          '<span class="pill pill-ink">Race '+state.round+' · '+trackLabel(track)+'</span>'+
-          '<span class="pill pill-paper">'+(g.turn===0?'Sebelum race':'Giliran '+g.turn)+' · #1 +'+awards[0]+' / #2 +'+awards[1]+'</span>'+
+          '<span class="pill '+(track==='wild'?'pill-coral':'pill-teal')+'">Race <span class="num-display">'+state.round+'</span> · '+trackLabel(track)+'</span>'+
+          '<span class="pill">'+(g.turn===0?'Sebelum race':'Giliran <span class="num-display">'+g.turn+'</span>')+' · <span class="num-display">#1 +'+awards[0]+' / #2 +'+awards[1]+'</span></span>'+
         '</div>'+
-        '<h1>'+esc(activeOriginal)+'</h1>'+
+        '<h1><span class="racer-init-chip" style="background:'+activeColor+';color:'+racerFg(activeColor)+';vertical-align:middle;margin-right:8px" aria-hidden="true">'+esc((activeOriginal||'?')[0])+'</span>'+esc(activeOriginal)+'</h1>'+
         '<div class="race-head-meta">'+
           '<span>'+esc(state.players[active].name)+'</span>'+
-          '<span class="pill pill-yellow">'+esc(referee.display(g.pos[active]))+'</span>'+
-          '<span class="pill">'+state.scores[active]+' poin</span>'+
-          (activePower!==activeOriginal?'<span class="pill">Menyalin: '+esc(activePower)+'</span>':'')+
-          (g.guess?'<span class="pill">Tebakan: '+g.guess+'</span>':'')+
-          (g.tripped[active]?'<span class="pill pill-coral">Tersandung</span>':'')+
+          '<span class="pill pill-yellow"><span class="num-display">'+esc(referee.display(g.pos[active]))+'</span></span>'+
+          '<span class="pill"><span class="num-display">'+state.scores[active]+'</span> poin</span>'+
+          (activePower!==activeOriginal?'<span class="pill pill-purple">Menyalin: '+esc(activePower)+'</span>':'')+
+          (g.guess?'<span class="pill pill-teal">Tebakan: <span class="num-display">'+g.guess+'</span></span>':'')+
+          (g.tripped[active]?'<span class="pill pill-error">Tersandung</span>':'')+
         '</div>'+
       '</header>'+
       '<section class="panel action-panel"><span class="tag">'+stageLabel+'</span>'+tableTask(t)+'</section>'+
@@ -416,16 +429,31 @@ function tableRace(){
     '</div>'+
     '<div class="race-col">'+
       '<section class="panel">'+
-        '<div class="row spread"><h2>Posisi di papan</h2><span class="pill pill-muted">Start 0 · Finis '+referee.finishLine+'</span></div>'+
+        '<div class="row spread"><h2>Posisi di papan</h2><span class="pill pill-muted">Start <span class="num-display">0</span> · Finis <span class="num-display">'+referee.finishLine+'</span></span></div>'+
         '<p class="muted" style="margin:6px 0 8px">'+profile+'</p>'+
-        renderTrackBoard(g,t)+
+        renderTrackBoard(g,t,raceColors)+
         '<div class="racer-rows">'+rowsHtml+'</div>'+
       '</section>'+
       syncForm()+
-      '<details><summary>Riwayat race ('+state.log.length+')</summary>'+(state.log.length?'<ol class="full-log">'+state.log.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ol>':'<p class="muted">Belum ada kejadian tercatat.</p>')+'</details>'+
+      '<details><summary>Riwayat race (<span class="num-display">'+state.log.length+'</span>)</summary>'+(state.log.length?'<ol class="full-log">'+state.log.map(line=>'<li>'+esc(line)+'</li>').join('')+'</ol>':'<p class="muted">Belum ada kejadian tercatat.</p>')+'</details>'+
       '<details><summary>Kartu dan kemampuan</summary>'+roster(true)+'</details>'+
     '</div>'+
   '</div>';
+}
+
+function thirdPlaceRunner(places){
+  const g=state.gm;
+  if(!g||state.players.length<3)return null;
+  const taken=new Set((places||[]).map(p=>p.player+'::'+p.racer));
+  const candidates=state.players.map((pl,i)=>({
+    player:pl.name,
+    racer:referee.name(state,i),
+    pos:g.pos[i]||0,
+    out:g.status[i]==='out'
+  })).filter(c=>!taken.has(c.player+'::'+c.racer));
+  if(!candidates.length)return null;
+  candidates.sort((a,b)=>(a.out===b.out?b.pos-a.pos:a.out?1:-1));
+  return candidates[0];
 }
 
 function tableResults(){
@@ -437,6 +465,7 @@ function tableResults(){
   const winners=state.players.filter((_,i)=>(state.scores?.[i]||0)===max).map(p=>esc(p.name));
   const ended=state.round>=state.slots;
   const track=trackLabel(referee.config(state));
+  const third=thirdPlaceRunner(places);
 
   const isMastermindDouble=places.length===2&&places[0].player===places[1].player&&places[0].racer===places[1].racer;
   let podiumHtml='<p class="muted">Belum ada atlet yang ditempatkan.</p>';
@@ -447,7 +476,7 @@ function tableResults(){
         '<div class="podium-rank">'+medalSvg(1)+' '+medalSvg(2)+'<span>Posisi #1 & #2 (Borong Podium · Mastermind)</span></div>'+
         '<div class="podium-racer">'+esc(places[0].racer)+'</div>'+
         '<div>Pemain: <strong>'+esc(places[0].player)+'</strong></div>'+
-        '<div class="row" style="margin-top:6px"><span class="pill pill-ink">Prediksi diri sendiri tepat</span><span class="pill">+'+awards[0]+' + '+awards[1]+' = +'+(awards[0]+awards[1])+' poin</span></div>'+
+        '<div class="row" style="margin-top:6px"><span class="pill pill-ink">Prediksi diri sendiri tepat</span><span class="pill pill-yellow num-display">+'+awards[0]+' + '+awards[1]+' = +'+(awards[0]+awards[1])+' POIN</span></div>'+
       '</article>'+
     '</div>';
   }else if(places.length){
@@ -455,31 +484,39 @@ function tableResults(){
     const second=places[1];
     podiumHtml='<div class="podium-grid">'+
       '<article class="podium-card podium-1">'+
-        '<div class="podium-rank">'+medalSvg(1)+'<span>Juara #1</span></div>'+
+        '<div class="podium-rank">'+medalSvg(1)+'<span>JUARA #1</span></div>'+
         '<div class="podium-racer">'+esc(first.racer)+'</div>'+
         '<div>Pemain: <strong>'+esc(first.player)+'</strong></div>'+
-        '<div style="margin-top:4px"><span class="pill pill-ink">+'+awards[0]+' poin</span></div>'+
+        '<div style="margin-top:4px"><span class="pill pill-yellow num-display">+'+awards[0]+' POIN</span></div>'+
       '</article>'+
       (second
         ?'<article class="podium-card podium-2">'+
-          '<div class="podium-rank">'+medalSvg(2)+'<span>Posisi #2</span></div>'+
+          '<div class="podium-rank">'+medalSvg(2)+'<span>POSISI #2</span></div>'+
           '<div class="podium-racer">'+esc(second.racer)+'</div>'+
           '<div>Pemain: <strong>'+esc(second.player)+'</strong></div>'+
-          '<div style="margin-top:4px"><span class="pill pill-yellow">+'+awards[1]+' poin</span></div>'+
+          '<div style="margin-top:4px"><span class="pill pill-yellow num-display">+'+awards[1]+' POIN</span></div>'+
         '</article>'
         :'<article class="podium-card podium-empty">'+
-          '<div class="podium-rank"><span>Posisi #2</span></div>'+
+          '<div class="podium-rank"><span>POSISI #2</span></div>'+
           '<strong>Tidak dibagikan</strong>'+
           '<p class="muted">Hanya satu peserta tersisa hingga race berakhir.</p>'+
         '</article>')+
+      (third
+        ?'<article class="podium-card podium-3">'+
+          '<div class="podium-rank">'+medalSvg(3)+'<span>POSISI #3</span></div>'+
+          '<div class="podium-racer">'+esc(third.racer)+'</div>'+
+          '<div>Pemain: <strong>'+esc(third.player)+'</strong></div>'+
+          '<div style="margin-top:4px"><span class="pill pill-white">Runner-up · '+(third.out?'Eliminasi':'Petak '+third.pos)+'</span></div>'+
+        '</article>'
+        :'')+
     '</div>';
   }
 
-  return heading(ended?'Hasil permainan':'Race '+state.round+' selesai',ended?(winners.length>1?'Juara bersama · '+winners.join(' & '):'Juara turnamen · '+winners[0]):track,track)+
-    '<section class="panel"><h2>Podium Race '+state.round+'</h2>'+podiumHtml+'</section>'+
+  return heading(ended?'HASIL PERMAINAN!':'RACE '+state.round+' SELESAI!',ended?(winners.length>1?'Juara bersama: <b>'+winners.join(' & ')+'</b>':'Juara turnamen: <b>'+winners[0]+'</b>'):'Lintasan: <b>'+track+'</b>',track.toUpperCase(),'hero-podium')+
+    '<section class="panel"><div class="row spread"><h2>Podium Race <span class="num-display">'+state.round+'</span></h2><button type="button" onclick="window.confettiBurst&&window.confettiBurst(180)">Rayakan lagi!</button></div>'+podiumHtml+'</section>'+
     '<section class="panel"><h2>Klasemen kumulatif</h2>'+leaderboard()+'</section>'+
     (results.length>1?'<details><summary>Podium race sebelumnya</summary>'+results.filter(r=>r.round!==state.round).map(r=>'<p><strong>Race '+r.round+' · '+trackLabel(r.track)+'</strong><br>'+r.places.map((p,i)=>'#'+(i+1)+' '+esc(p.racer)+' ('+esc(p.player)+')').join(' · ')+'</p>').join('')+'</details>':'')+
-    '<div class="panel">'+(ended?button('Permainan baru','reset','class="primary btn-block"',true):button('Siapkan Race '+(state.round+1),'round','class="primary btn-block"',true))+'</div>';
+    '<div class="panel">'+(ended?button('MAIN LAGI!','reset','class="primary btn-block"',true):button('SIAPKAN RACE '+(state.round+1)+'!','round','class="primary btn-block"',true))+'</div>';
 }
 
 function refereeForm(id,data){

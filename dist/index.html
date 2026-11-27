@@ -328,6 +328,7 @@ small,.muted{color:var(--color-ink-soft);font-size:14px;font-weight:700}
 .pill-pink{background:var(--color-pink);color:var(--color-ink)}
 .pill-error{background:var(--color-error);color:var(--color-ink)}
 .pill-ink{background:var(--color-ink);color:var(--color-white)}
+.pill-white{background:var(--color-white);color:var(--color-ink)}
 .pill-muted{background:var(--color-muted-surface);color:var(--color-ink-soft)}
 
 /* Layout Helpers */
@@ -1071,6 +1072,10 @@ form{margin:0}
 }
 .die-btn.is-rolling{
   animation:die-shake 220ms var(--ease);
+}
+.die-roll-anim{
+  display:inline-flex;
+  animation:die-shake var(--d-normal) var(--ease);
 }
 .die-pips{display:block;width:24px;height:24px}
 
@@ -1979,6 +1984,10 @@ document.querySelector('#undo').addEventListener('click',()=>{
     shouldShiftFocus=true;
     render();
   }
+});
+screen.addEventListener('pointerdown',e=>{
+  const die=e.target.closest('.die-btn');
+  if(die&&!confettiReduced())die.classList.add('is-rolling');
 });
 render();
 </script>
